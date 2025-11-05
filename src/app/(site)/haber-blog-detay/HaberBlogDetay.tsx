@@ -236,7 +236,7 @@ export default function HaberBlogDetay({ postId }: Props) {
                       >
                         <Image
                           src={src}
-                          alt={`Önizleme görseli ${i + 1}`}
+                          alt={`Önizleme görseli ${i + 1}` || "CBO İnşaat"}
                           fill
                           className="object-cover"
                           sizes="160px"
