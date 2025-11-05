@@ -1,24 +1,18 @@
-"use client";
+import { Suspense } from "react";
+import QueryBridge from "./QueryBridge";
 
-import { useSearchParams } from "next/navigation";
-import HizmetDetay from "./HizmetDetay";
+export const dynamic = "force-static"; // static export ile uyumlu
 
-export default function HizmetDetayPage() {
-  const params = useSearchParams();
-  const id = params.get("id") || "";
-
-  if (!id) {
-    return (
-      <main className="min-h-[60vh] grid place-items-center px-6">
-        <div className="max-w-xl text-center">
-          <h1 className="text-2xl font-bold text-gray-900">Hizmet bulunamadı</h1>
-          <p className="mt-2 text-gray-600">
-            Geçersiz ya da eksik bir bağlantı kullandınız. Lütfen hizmetler sayfasından tekrar deneyin.
-          </p>
-        </div>
-      </main>
-    );
-  }
-
-  return <HizmetDetay serviceId={id} />;
+export default function Page() {
+  return (
+    <Suspense
+      fallback={
+        <main className="min-h-screen grid place-items-center bg-white mt-20">
+          <div className="animate-spin h-10 w-10 rounded-full border-4 border-slate-400 border-t-transparent" />
+        </main>
+      }
+    >
+      <QueryBridge />
+    </Suspense>
+  );
 }
