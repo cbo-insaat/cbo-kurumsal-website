@@ -8,6 +8,12 @@ import Image from "next/image";
 export default function Header() {
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [hasHero, setHasHero] = useState(false);
+
+  useEffect(() => {
+    // Sayfada [data-hero] var mı? (Ana sayfa gibi hero üstünde transparan görünüm için)
+    setHasHero(!!document.querySelector("[data-hero]"));
+  }, []);
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 50);
@@ -28,9 +34,8 @@ export default function Header() {
 
   return (
     <header
-      className={`fixed top-0 left-0 w-full transition-all duration-300 ${
-        scrolled ? "bg-white shadow-md" : "bg-transparent"
-      } z-50`}
+      className={`fixed top-0 left-0 w-full transition-all duration-300 ${scrolled ? "bg-white shadow-md" : "bg-transparent"
+        } z-50`}
     >
       <div className="max-w-7xl mx-auto flex items-center justify-between px-6 py-2">
         {/* Logo */}
@@ -130,9 +135,8 @@ export default function Header() {
         {/* Mobil Hamburger */}
         <button
           aria-label="Menüyü Aç/Kapat"
-          className={`md:hidden inline-flex items-center justify-center w-10 h-10 rounded-lg ${
-            scrolled ? "text-gray-900" : "text-white"
-          }`}
+          className={`md:hidden inline-flex items-center justify-center w-10 h-10 rounded-lg ${scrolled ? "text-gray-900" : "text-white"
+            }`}
           onClick={() => setMobileOpen((v) => !v)}
         >
           {mobileOpen ? (
@@ -151,24 +155,21 @@ export default function Header() {
 
       {/* Mobil Menü (slide-in) */}
       <div
-        className={`md:hidden fixed inset-0 z-40 transition ${
-          mobileOpen ? "pointer-events-auto" : "pointer-events-none"
-        }`}
+        className={`md:hidden fixed inset-0 z-40 transition ${mobileOpen ? "pointer-events-auto" : "pointer-events-none"
+          }`}
         aria-hidden={!mobileOpen}
       >
         {/* Arka plan blur + karartma */}
         <div
-          className={`absolute inset-0 bg-black/40 backdrop-blur-sm transition-opacity ${
-            mobileOpen ? "opacity-100" : "opacity-0"
-          }`}
+          className={`absolute inset-0 bg-black/40 backdrop-blur-sm transition-opacity ${mobileOpen ? "opacity-100" : "opacity-0"
+            }`}
           onClick={() => setMobileOpen(false)}
         />
 
         {/* Panel */}
         <nav
-          className={`absolute top-0 right-0 h-full w-[84%] max-w-sm bg-white shadow-2xl transition-transform duration-300 ${
-            mobileOpen ? "translate-x-0" : "translate-x-full"
-          }`}
+          className={`absolute top-0 right-0 h-full w-[84%] max-w-sm bg-white shadow-2xl transition-transform duration-300 ${mobileOpen ? "translate-x-0" : "translate-x-full"
+            }`}
           role="dialog"
           aria-label="Mobil menü"
         >

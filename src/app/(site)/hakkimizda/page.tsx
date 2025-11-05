@@ -6,7 +6,7 @@ export default function HakkimizdaPage() {
   return (
     <>
       {/* Hero Section - Görsel + Başlık */}
-      <section className="relative h-screen flex items-center justify-center overflow-hidden">
+      <section className="mt-20 relative h-screen flex items-center justify-center overflow-hidden">
         <div className="absolute inset-0">
           <Image
             src="/hakkimizda/image.png" // public/hakkimizda/image.png

@@ -48,7 +48,7 @@ export default function TumProjelerPage() {
   }, []);
 
   return (
-    <main className="min-h-screen bg-white">
+    <main className="min-h-screen bg-white mt-20">
       <div className="max-w-7xl mx-auto px-6 py-10">
         <header className="text-center mb-8">
           <h1 className="text-3xl md:text-4xl font-extrabold">

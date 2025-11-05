@@ -156,7 +156,7 @@ export default function ProjeDetay({ projectId }: Props) {
     }, [projectId]);
 
     return (
-        <main className="min-h-screen bg-white">
+        <main className="min-h-screen bg-white mt-20">
             <div className="max-w-7xl mx-auto px-6 py-10">
                 {/* Üst bar */}
                 <div className="mb-6 flex flex-wrap items-center gap-3">

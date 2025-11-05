@@ -152,7 +152,7 @@ export default function HizmetDetay({ serviceId }: Props) {
     }, [serviceId]);
 
     return (
-        <main className="min-h-screen bg-white">
+        <main className="min-h-screen bg-white mt-20">
             <div className="max-w-7xl mx-auto px-6 py-10">
                 {/* Üst başlık alanı — loading */}
                 {!service && !error && (

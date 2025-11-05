@@ -135,7 +135,7 @@ export default function HaberBlogDetay({ postId }: Props) {
   }, [postId]);
 
   return (
-    <main className="min-h-screen bg-white">
+    <main className="min-h-screen bg-white mt-20">
       <div className="max-w-7xl mx-auto px-6 py-10">
         {/* Üst bar: geri, kategori, tarih, okuma süresi */}
         <div className="mb-6 flex flex-wrap items-center gap-3">

@@ -48,7 +48,7 @@ export default function HomePage() {
   }
 
   return (
-    <main className="relative">
+    <main className="relative  " data-hero>
       <HeroSlider items={items} />
     </main>
   );

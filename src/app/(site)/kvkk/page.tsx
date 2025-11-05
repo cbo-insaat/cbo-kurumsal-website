@@ -12,7 +12,7 @@ const ORG = {
 
 export default function KVKKPage() {
   return (
-    <main className="min-h-screen bg-white">
+    <main className="min-h-screen bg-white mt-20">
       <div className="max-w-5xl mx-auto px-6 py-12">
         {/* Başlık */}
         <header className="text-center mb-10">
