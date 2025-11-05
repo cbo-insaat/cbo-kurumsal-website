@@ -1,11 +1,9 @@
 // File: app/bitmis-projeler/page.tsx
-import nextDynamic from "next/dynamic";
-import { Suspense } from "react";
+"use client";
 
-export const dynamic = "force-static" as const; // route option
-export const revalidate = false;
+import dynamic from "next/dynamic";
 
-const BitmisProjelerClient = nextDynamic(() => import("./BitmisProjelerClient"), {
+const BitmisProjelerClient = dynamic(() => import("./BitmisProjelerClient"), {
   ssr: false,
   loading: () => (
     <main className="min-h-screen grid place-items-center bg-white mt-20">
@@ -15,9 +13,5 @@ const BitmisProjelerClient = nextDynamic(() => import("./BitmisProjelerClient"),
 });
 
 export default function Page() {
-  return (
-    <Suspense fallback={null}>
-      <BitmisProjelerClient />
-    </Suspense>
-  );
+  return <BitmisProjelerClient />;
 }
