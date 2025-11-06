@@ -1,4 +1,3 @@
-// File: app/haberler-blog/page.tsx
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
@@ -139,7 +138,7 @@ export default function HaberlerBlogPage() {
         {/* Başlık */}
         <header className="text-center mb-8">
           <h1 className="text-3xl md:text-4xl font-extrabold">
-            <span className="bg-gradient-to-r from-[#155dfc] to-[#8cc1ff] bg-clip-text text-transparent">
+            <span className="bg-gradient-to-r from-slate-600 to-slate-300 bg-clip-text text-transparent">
               Tüm Haber &amp; Bloglar
             </span>
           </h1>
@@ -154,7 +153,7 @@ export default function HaberlerBlogPage() {
             placeholder="Ara: başlık, etiket, içerik…"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full md:flex-1 rounded-lg border border-gray-300 px-4 py-2.5 text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#155dfc] focus:border-[#155dfc]"
+            className="w-full md:flex-1 rounded-lg border border-gray-300 px-4 py-2.5 text-gray-900 focus:outline-none focus:ring-2 focus:ring-slate-600 focus:border-slate-600"
           />
           <div className="flex gap-2 overflow-x-auto">
             {categories.map((c) => (
@@ -163,7 +162,7 @@ export default function HaberlerBlogPage() {
                 onClick={() => setCat(c)}
                 className={`px-3 py-2 rounded-lg text-sm border transition whitespace-nowrap ${
                   cat === c
-                    ? "bg-[#155dfc] text-white border-[#155dfc]"
+                    ? "bg-slate-600 text-white border-slate-600"
                     : "bg-white text-gray-700 border-gray-200 hover:bg-gray-50"
                 }`}
               >
@@ -261,7 +260,7 @@ export default function HaberlerBlogPage() {
                       <div className="px-4 pb-4">
                         <span
                           className="
-                            inline-flex items-center text-sm font-medium text-[#155dfc]
+                            inline-flex items-center text-sm font-medium text-slate-600
                             opacity-0 translate-y-1 group-hover:opacity-100 group-hover:translate-y-0
                             transition-all duration-300
                           "

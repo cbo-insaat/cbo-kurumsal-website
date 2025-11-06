@@ -1,5 +1,6 @@
-// File: app/kvkk/page.tsx
+// app/kvkk/page.tsx
 import Link from "next/link";
+import { JSX } from "react";
 
 const ORG = {
   name: "CBO İnşaat",
@@ -7,46 +8,64 @@ const ORG = {
   phone: "0511 111 11 11",
   email: "info@cboyapi.com",
   website: "https://cboyapi.com",
-  updatedAt: "05.11.2025", // Son güncelleme
+  updatedAt: "05.11.2025",
 };
 
 export default function KVKKPage() {
   return (
     <main className="min-h-screen bg-white mt-20">
-      <div className="max-w-5xl mx-auto px-6 py-12">
-        {/* Başlık */}
-        <header className="text-center mb-10">
-          <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight">
-            <span className="bg-gradient-to-r from-[#155dfc] to-[#8cc1ff] bg-clip-text text-transparent">
-              Kişisel Verilerin Korunması Aydınlatma Metni
+      <div className="max-w-5xl mx-auto px-6 py-16">
+        {/* HERO BAŞLIK */}
+        <header className="text-center mb-14">
+          <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight">
+            <span className="bg-gradient-to-r from-slate-600 to-slate-300 bg-clip-text text-transparent">
+              Kişisel Verilerin Korunması
             </span>
           </h1>
-          <p className="mt-3 text-sm text-gray-500">
-            Son güncelleme: {ORG.updatedAt}
+          <p className="mt-4 text-xl text-slate-600 font-medium">
+            KVKK Aydınlatma Metni
+          </p>
+          <p className="mt-3 text-sm text-slate-500">
+            Son güncelleme: <span className="font-bold">{ORG.updatedAt}</span>
           </p>
         </header>
 
-        {/* Hızlı İçindekiler */}
-        <nav className="mb-8">
-          <div className="rounded-2xl border border-gray-100 bg-gray-50 p-4">
-            <p className="font-semibold text-gray-800 mb-2">İçindekiler</p>
-            <ul className="grid sm:grid-cols-2 gap-2 text-sm text-gray-700">
+        {/* İÇİNDEKİLER – Kart + Hover */}
+        <nav className="mb-14">
+          <div className="rounded-3xl border-2 border-slate-100 bg-slate-50/80 p-8 shadow-lg backdrop-blur">
+            <p className="text-xl font-bold text-slate-800 mb-6 text-center">
+              İçindekiler
+            </p>
+            <ul className="grid sm:grid-cols-2 gap-4">
               {[
                 ["Veri Sorumlusu", "#veri-sorumlusu"],
-                ["İşlenen Veri Kategorileri", "#kategoriler"],
-                ["Amaç ve Hukuki Sebepler", "#amac-hukuki-sebep"],
+                ["İşlenen Veriler", "#kategoriler"],
+                ["Amaç & Hukuki Sebep", "#amac-hukuki-sebep"],
                 ["Toplama Yöntemi", "#yontem"],
                 ["Aktarımlar", "#aktarim"],
                 ["Saklama Süreleri", "#saklama"],
-                ["Aydınlatma (KVKK m.10) & Haklar (m.11)", "#haklar"],
-                ["Başvuru Yöntemi", "#basvuru"],
-                ["Güvenlik Tedbirleri", "#guvenlik"],
+                ["Haklarınız", "#haklar"],
+                ["Başvuru", "#basvuru"],
+                ["Güvenlik", "#guvenlik"],
                 ["Çerezler", "#cerezler"],
                 ["Değişiklikler", "#degisiklikler"],
-              ].map(([t, href]) => (
-                <li key={href}>
-                  <a href={href} className="hover:underline">
-                    {t}
+              ].map(([t, href], i) => (
+                <li key={href} className="group">
+                  <a
+                    href={href}
+                    className="
+                      flex items-center gap-3 py-3 px-5 rounded-2xl
+                      bg-white/70 hover:bg-white shadow-md hover:shadow-xl
+                      border border-slate-200 hover:border-slate-300
+                      transition-all duration-300 group-hover:-translate-y-1
+                    "
+                  >
+                    <span className="w-9 h-9 rounded-full bg-slate-600 text-white flex items-center justify-center text-sm font-bold">
+                      {i + 1}
+                    </span>
+                    <span className="font-medium text-slate-700 group-hover:text-slate-900">
+                      {t}
+                    </span>
                   </a>
                 </li>
               ))}
@@ -54,174 +73,218 @@ export default function KVKKPage() {
           </div>
         </nav>
 
-        {/* İçerik */}
-        <section id="veri-sorumlusu" className="mb-10">
-          <h2 className="text-2xl font-bold text-slate-900 mb-3">1) Veri Sorumlusu</h2>
-          <p className="text-gray-700 leading-relaxed">
-            6698 sayılı Kişisel Verilerin Korunması Kanunu (“KVKK”) uyarınca kişisel
-            verileriniz; veri sorumlusu{" "}
-            <strong>{ORG.name}</strong> tarafından, aşağıda açıklanan kapsamda
-            işlenmektedir.
-          </p>
-          <div className="mt-3 text-sm text-gray-700">
-            <p><span className="font-semibold">Adres:</span> {ORG.address}</p>
-            <p><span className="font-semibold">Telefon:</span> {ORG.phone}</p>
-            <p>
-              <span className="font-semibold">E-posta:</span>{" "}
-              <a href={`mailto:${ORG.email}`} className="underline">{ORG.email}</a>
+        {/* BÖLÜMLER */}
+        <article className="space-y-16">
+
+          {/* 1. Veri Sorumlusu */}
+          <section id="veri-sorumlusu">
+            <h2 className="text-2xl font-bold text-slate-900 mb-5 flex items-center gap-3">
+              <span className="w-10 h-10 rounded-full bg-slate-100 text-slate-600 flex items-center justify-center font-bold text-sm">1</span>
+              Veri Sorumlusu
+            </h2>
+            <div className="bg-gradient-to-r from-slate-50 to-white rounded-2xl p-7 border border-slate-200 shadow-md">
+              <p className="text-slate-700 leading-relaxed mb-4">
+                6698 sayılı KVKK uyarınca kişisel verileriniz; veri sorumlusu olarak{" "}
+                <strong className="text-slate-800">{ORG.name}</strong> tarafından aşağıda açıklanan kapsamda işlenmektedir.
+              </p>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 text-sm">
+                <InfoCard icon="building" label="Ticari Unvan">{ORG.name}</InfoCard>
+                <InfoCard icon="map-pin" label="Adres">{ORG.address}</InfoCard>
+                <InfoCard icon="phone" label="Telefon">
+                  <a href={`tel:${ORG.phone.replace(/\s/g, "")}`} className="hover:underline">{ORG.phone}</a>
+                </InfoCard>
+                <InfoCard icon="mail" label="E-posta">
+                  <a href={`mailto:${ORG.email}`} className="hover:underline">{ORG.email}</a>
+                </InfoCard>
+              </div>
+            </div>
+          </section>
+
+          {/* 2. İşlenen Veriler */}
+          <section id="kategoriler">
+            <h2 className="text-2xl font-bold text-slate-900 mb-5 flex items-center gap-3">
+              <span className="w-10 h-10 rounded-full bg-slate-100 text-slate-600 flex items-center justify-center font-bold text-sm">2</span>
+              İşlenen Kişisel Veri Kategorileri
+            </h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+              {[
+                "Kimlik (ad-soyad)",
+                "İletişim (tel, e-posta)",
+                "Teklif & Talep İçerikleri",
+                "IP & Log Kayıtları",
+                "Gönderilen Dosyalar",
+                "Finansal Bilgiler (gerekliyse)",
+              ].map((item, i) => (
+                <div key={i} className="bg-white border border-slate-200 rounded-2xl p-5 shadow hover:shadow-lg transition">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-full bg-emerald-100 flex items-center justify-center">
+                      <svg className="w-5 h-5 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                      </svg>
+                    </div>
+                    <p className="text-sm font-medium text-slate-700">{item}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+            <p className="mt-5 text-sm text-slate-500 bg-slate-50 border border-slate-200 rounded-xl p-5">
+              <strong>Not:</strong> Özel nitelikli veri (sağlık, din, biyometri vb.) yalnızca kanunen zorunlu ise ve ek tedbirlerle işlenir.
             </p>
-            <p>
-              <span className="font-semibold">Web:</span>{" "}
-              <a href={ORG.website} className="underline" target="_blank">
-                {ORG.website}
-              </a>
+          </section>
+
+          {/* 3. Amaç & Hukuki Sebep */}
+          <section id="amac-hukuki-sebep">
+            <h2 className="text-2xl font-bold text-slate-900 mb-5 flex items-center gap-3">
+              <span className="w-10 h-10 rounded-full bg-slate-100 text-slate-600 flex items-center justify-center font-bold text-sm">3</span>
+              İşleme Amaçları & Hukuki Sebepler
+            </h2>
+            <div className="space-y-5">
+              {[
+                { purpose: "Teklif & Proje Yönetimi", basis: "Sözleşmenin İfası" },
+                { purpose: "Yasal Yükümlülükler", basis: "Hukuki Yükümlülük" },
+                { purpose: "İletişim & Destek", basis: "Meşru Menfaat" },
+                { purpose: "Güvenlik & Dolandırıcılık Önleme", basis: "Meşru Menfaat" },
+                { purpose: "Pazarlama (İzinli)", basis: "Açık Rıza" },
+              ].map((item, i) => (
+                <div key={i} className="flex gap-4 items-start bg-white rounded-2xl p-5 border border-slate-200 shadow-sm hover:shadow-md transition">
+                  <div className="w-12 h-12 rounded-full bg-slate-600 text-white flex items-center justify-center font-bold text-sm">
+                    {i + 1}
+                  </div>
+                  <div>
+                    <p className="font-semibold text-slate-800">{item.purpose}</p>
+                    <p className="text-sm text-slate-600 mt-1">Hukuki Sebep: <span className="font-medium">{item.basis}</span></p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </section>
+
+          {/* 4. Toplama Yöntemi */}
+          <section id="yontem">
+            <h2 className="text-2xl font-bold text-slate-900 mb-5 flex items-center gap-3">
+              <span className="w-10 h-10 rounded-full bg-slate-100 text-slate-600 flex items-center justify-center font-bold text-sm">4</span>
+              Toplama Yöntemi
+            </h2>
+            <div className="bg-slate-50 rounded-2xl p-7 border border-slate-200">
+              <p className="text-slate-700">
+                Verileriniz şu yollarla toplanır:
+              </p>
+              <div className="mt-5 grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <LinkCard href="/iletisim" label="İletişim Formu" />
+                <LinkCard href="/teklif-al" label="Teklif Formu" />
+                <SimpleCard label="E-posta & Telefon" />
+                <SimpleCard label="Çerezler & Loglar" />
+              </div>
+            </div>
+          </section>
+
+          {/* 5. Aktarımlar */}
+          <section id="aktarim">
+            <h2 className="text-2xl font-bold text-slate-900 mb-5 flex items-center gap-3">
+              <span className="w-10 h-10 rounded-full bg-slate-100 text-slate-600 flex items-center justify-center font-bold text-sm">5</span>
+              Aktarımlar
+            </h2>
+            <p className="text-slate-700 bg-amber-50 border border-amber-200 rounded-xl p-5">
+              <strong>Yurt dışı aktarım:</strong> Firebase (Google) üzerinden gerçekleşir. Açık rıza alınır veya KVKK standartları sağlanır.
             </p>
+          </section>
+
+          {/* 6–11. Kısa Kartlar */}
+          <div className="grid md:grid-cols-2 gap-8">
+            <ShortSection id="saklama" num="6" title="Saklama Süreleri">
+              Amaç bitince silinir. Yasal süreler (10 yıl) saklanır.
+            </ShortSection>
+            <ShortSection id="haklar" num="7" title="KVKK m.11 Haklarınız">
+              Bilgi, düzeltme, silme, itiraz, tazminat...
+            </ShortSection>
+            <ShortSection id="basvuru" num="8" title="Başvuru">
+              E-posta: {ORG.email}<br />Posta: {ORG.address}
+            </ShortSection>
+            <ShortSection id="guvenlik" num="9" title="Güvenlik">
+              Şifreleme · Yetkilendirme · Yedekleme
+            </ShortSection>
+            <ShortSection id="cerezler" num="10" title="Çerezler">
+              <Link href="/cerez-politikasi" className="underline font-medium">Çerez Politikası</Link>
+            </ShortSection>
+            <ShortSection id="degisiklikler" num="11" title="Değişiklikler">
+              Güncellemeler bu sayfada yayımlanır.
+            </ShortSection>
           </div>
-        </section>
+        </article>
 
-        <section id="kategoriler" className="mb-10">
-          <h2 className="text-2xl font-bold text-slate-900 mb-3">2) İşlenen Kişisel Veri Kategorileri</h2>
-          <ul className="list-disc pl-6 text-gray-700 space-y-1">
-            <li>Kimlik Bilgileri (ad-soyad vb.)</li>
-            <li>İletişim Bilgileri (telefon, e-posta, adres)</li>
-            <li>Müşteri İşlem Verileri (teklif/form içerikleri, talep/şikâyet kayıtları)</li>
-            <li>Pazarlama Verileri (izinler, kampanya tercihleri)</li>
-            <li>İşlem Güvenliği / Log Kayıtları (IP, tarayıcı bilgisi, zaman damgaları)</li>
-            <li>Görsel/İşitsel Kayıtlar (gönderilmiş dosyalar vb., varsa)</li>
-            <li>Finansal Veriler (teklif/ödeme bilgileri, fatura verileri — gerekiyorsa)</li>
-            <li>Lokasyon Bilgisi (harita/servis kullanımı kapsamında, açık rıza/ayarlara bağlı olarak)</li>
-          </ul>
-          <p className="mt-3 text-sm text-gray-500">
-            <em>Özel nitelikli kişisel veriler sadece kanuni zorunluluk ve/veya açık rıza
-            halinde ve mevzuata uygun ilave tedbirlerle işlenir.</em>
-          </p>
-        </section>
-
-        <section id="amac-hukuki-sebep" className="mb-10">
-          <h2 className="text-2xl font-bold text-slate-900 mb-3">3) İşleme Amaçları ve Hukuki Sebepler</h2>
-          <p className="text-gray-700 mb-3">
-            Kişisel verileriniz aşağıdaki amaçlarla KVKK m.5/2 kapsamında işlenmektedir:
-          </p>
-          <ul className="list-disc pl-6 text-gray-700 space-y-1">
-            <li>Tekliflendirme, keşif, sözleşme ve proje yönetimi süreçlerinin yürütülmesi
-              (<strong>sözleşmenin kurulması/ifası</strong>).</li>
-            <li>Hukuki yükümlülüklerin yerine getirilmesi (mali/vergisel işlemler, talep/şikâyet yönetimi)
-              (<strong>hukuki yükümlülük</strong>).</li>
-            <li>İletişim faaliyetleri, randevu/yerinde keşif ve destek süreçleri (<strong>meşru menfaat</strong>).</li>
-            <li>Güvenlik, dolandırıcılık ve suiistimalin önlenmesi (<strong>meşru menfaat</strong>).</li>
-            <li>Açık rıza verilen pazarlama/ileti yönetimi (<strong>açık rıza</strong>).</li>
-          </ul>
-        </section>
-
-        <section id="yontem" className="mb-10">
-          <h2 className="text-2xl font-bold text-slate-900 mb-3">4) Toplama Yöntemi</h2>
-          <p className="text-gray-700">
-            Verileriniz; internet sitemizdeki formlar (<Link href="/iletisim" className="underline">iletişim</Link>,{" "}
-            <Link href="/teklif-al" className="underline">teklif</Link>), e-posta/telefon yazışmaları,
-            sözleşme/evrak süreçleri, çerezler ve dijital kayıt sistemleri aracılığıyla
-            elektronik ve/veya fiziki yollarla elde edilir.
-          </p>
-        </section>
-
-        <section id="aktarim" className="mb-10">
-          <h2 className="text-2xl font-bold text-slate-900 mb-3">5) Aktarımlar (Alıcı Grupları)</h2>
-          <p className="text-gray-700 mb-3">
-            Amaçla sınırlı olmak üzere; {ORG.name}’in hizmet aldığı veya iş birliği yaptığı
-            tedarikçilere, kargo/lojistik, bankacılık/ödeme kuruluşları, mali müşavirlik,
-            hukuk/danışmanlık, bilişim/hosting hizmet sağlayıcılarına; yasal zorunluluk
-            halinde yetkili kişi, kurum ve kuruluşlara aktarım yapılabilir. Yurt dışına
-            aktarım söz konusu ise açık rızanız alınır veya KVKK’daki istisnalar dâhilinde
-            gerekli koruma şartları sağlanır.
-          </p>
-        </section>
-
-        <section id="saklama" className="mb-10">
-          <h2 className="text-2xl font-bold text-slate-900 mb-3">6) Saklama Süreleri</h2>
-          <p className="text-gray-700">
-            Kişisel verileriniz; ilgili mevzuattaki zamanaşımı ve ispat yükümlülüğü
-            süreleri, muhasebe/vergisel saklama süreleri ve işleme amaçlarımızla
-            sınırlı olarak saklanır; süre dolduğunda silinir, yok edilir veya anonim
-            hâle getirilir.
-          </p>
-        </section>
-
-        <section id="haklar" className="mb-10">
-          <h2 className="text-2xl font-bold text-slate-900 mb-3">
-            7) KVKK m.10 Aydınlatma & m.11 Kapsamındaki Haklarınız
-          </h2>
-          <p className="text-gray-700 mb-3">
-            Başvurunuz üzerine aşağıdaki haklarınızı kullanabilirsiniz:
-          </p>
-          <ul className="list-disc pl-6 text-gray-700 space-y-1">
-            <li>Verilerinizin işlenip işlenmediğini öğrenme,</li>
-            <li>İşlenmişse buna ilişkin bilgi talep etme,</li>
-            <li>İşleme amacını ve amaca uygun kullanılıp kullanılmadığını öğrenme,</li>
-            <li>Yurt içi/yurt dışı aktarılan üçüncü kişileri bilme,</li>
-            <li>Eksik veya yanlış işlenmişse düzeltilmesini isteme,</li>
-            <li>KVKK ve ilgili mevzuata uygun olarak silinmesini/yok edilmesini isteme,</li>
-            <li>Bu işlemlerin aktarıldığı üçüncü kişilere bildirilmesini isteme,</li>
-            <li>Otomatik sistemlerce analiz sonucu aleyhinize bir sonucun ortaya çıkmasına
-              itiraz etme,</li>
-            <li>Kanuna aykırı işleme sebebiyle zarara uğramanız hâlinde tazminat talep etme.</li>
-          </ul>
-        </section>
-
-        <section id="basvuru" className="mb-10">
-          <h2 className="text-2xl font-bold text-slate-900 mb-3">8) Başvuru Yöntemi</h2>
-          <p className="text-gray-700">
-            Haklarınızı kullanmak için kimliğinizi tevsik edecek belgelerle birlikte;
-            <br />
-            <span className="font-semibold">• E-posta:</span>{" "}
-            <a href={`mailto:${ORG.email}`} className="underline">{ORG.email}</a>{" "}
-            <br />
-            <span className="font-semibold">• Posta/elden:</span> {ORG.address}
-            <br />
-            adreslerine başvuruda bulunabilirsiniz. Başvurularınız KVKK’da öngörülen
-            sürelerde sonuçlandırılır.
-          </p>
-        </section>
-
-        <section id="guvenlik" className="mb-10">
-          <h2 className="text-2xl font-bold text-slate-900 mb-3">9) Teknik ve İdari Tedbirler</h2>
-          <ul className="list-disc pl-6 text-gray-700 space-y-1">
-            <li>Erişim yetkilendirme, parola politikaları, loglama ve ağ güvenliği</li>
-            <li>Şifreleme, yedekleme ve saklama güvenliği</li>
-            <li>Tedarikçi sözleşmeleri ve gizlilik taahhütleri</li>
-            <li>Personel farkındalık eğitimleri ve iç politika/prosedürler</li>
-          </ul>
-        </section>
-
-        <section id="cerezler" className="mb-10">
-          <h2 className="text-2xl font-bold text-slate-900 mb-3">10) Çerezler</h2>
-          <p className="text-gray-700">
-            Sitemizde performans ve deneyim amaçlı çerezler kullanılabilir. Detaylar için
-            <Link href="/cerez-politikasi" className="underline"> Çerez Politikası</Link>’na göz atabilirsiniz.
-            Tarayıcı ayarlarından çerez tercihlerinizi değiştirebilirsiniz.
-          </p>
-        </section>
-
-        <section id="degisiklikler" className="mb-10">
-          <h2 className="text-2xl font-bold text-slate-900 mb-3">11) Değişiklikler</h2>
-          <p className="text-gray-700">
-            İşbu Aydınlatma Metni gerekli görüldüğünde güncellenebilir. En güncel
-            versiyon <Link href="/" className="underline">web sitemizde</Link> yayımlanır.
-          </p>
-        </section>
-
-        {/* Alt CTA */}
-        <div className="mt-12 text-center">
+        {/* ALT CTA */}
+        <div className="mt-20 text-center">
           <Link
             href="/iletisim"
-            className="inline-flex items-center gap-2 px-6 py-3 rounded-xl font-semibold bg-[#155dfc] text-white hover:brightness-110 shadow-md"
+            className="
+              group inline-flex items-center gap-4 px-8 py-5 rounded-2xl
+              bg-gradient-to-r from-slate-600 to-slate-700 text-white font-bold text-lg
+              hover:from-slate-700 hover:to-slate-800
+              shadow-2xl hover:shadow-3xl hover:-translate-y-1
+              transition-all duration-300
+            "
           >
-            Sorunuz mu var? Bizimle iletişime geçin
+            Sorunuz mu var? Hemen Ulaşın
+            <svg className="w-6 h-6 transition group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+            </svg>
           </Link>
-          <p className="mt-3 text-xs text-gray-500">
-            *Bu metin genel bilgilendirme amaçlıdır; nihai hukuki değerlendirme için
-            uzman görüşü alınması önerilir.
+          <p className="mt-5 text-xs text-slate-500 max-w-2xl mx-auto">
+            *Bu metin KVKK m.10 kapsamında hazırlanmıştır. Hukuki yorum için uzman görüşü alınız.
           </p>
         </div>
       </div>
     </main>
+  );
+}
+
+/* Yardımcı Bileşenler */
+function InfoCard({ icon, label, children }: { icon: string; label: string; children: React.ReactNode }) {
+  const icons: Record<string, JSX.Element> = {
+    building: <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h-4m-6 0H5" /></svg>,
+    "map-pin": <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" /></svg>,
+    phone: <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" /></svg>,
+    mail: <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>,
+  };
+  return (
+    <div className="flex items-start gap-3 bg-white rounded-xl p-4 border border-slate-100">
+      <div className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center text-slate-600">
+        {icons[icon]}
+      </div>
+      <div>
+        <p className="text-xs font-bold text-slate-900 uppercase tracking-wider">{label}</p>
+        <div className="mt-1 text-sm text-slate-700">{children}</div>
+      </div>
+    </div>
+  );
+}
+
+function LinkCard({ href, label }: { href: string; label: string }) {
+  return (
+    <Link href={href} className="block bg-white rounded-xl p-5 border border-slate-200 shadow hover:shadow-md transition text-center">
+      <p className="font-medium text-slate-700">{label}</p>
+    </Link>
+  );
+}
+
+function SimpleCard({ label }: { label: string }) {
+  return (
+    <div className="bg-white rounded-xl p-5 border border-slate-200 shadow text-center">
+      <p className="font-medium text-slate-700">{label}</p>
+    </div>
+  );
+}
+
+function ShortSection({ id, num, title, children }: { id: string; num: string; title: string; children: React.ReactNode }) {
+  return (
+    <section id={id}>
+      <h2 className="text-xl font-bold text-slate-900 mb-4 flex items-center gap-3">
+        <span className="w-9 h-9 rounded-full bg-slate-600 text-white flex items-center justify-center text-sm font-bold">{num}</span>
+        {title}
+      </h2>
+      <div className="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm">
+        <div className="text-slate-700 text-sm leading-relaxed" dangerouslySetInnerHTML={{ __html: children as string }} />
+      </div>
+    </section>
   );
 }

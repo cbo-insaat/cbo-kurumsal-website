@@ -1,4 +1,4 @@
-// File: app/iletisim/page.tsx
+// app/iletisim/page.tsx
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
@@ -12,7 +12,7 @@ type Form = {
   website: string;
   message: string;
   captcha: string;
-  trap?: string; // honeypot
+  trap?: string;
 };
 
 const CONTACT = {
@@ -20,10 +20,10 @@ const CONTACT = {
   address:
     "19 MAYIS MAH. TOYGAR SK. 54 NOLU B.B. NO: 36G\nKAPAKLI / TEKİRDAĞ",
   phone: "0511 111 11 11",
-  email: "info@cboyapi.com", // ihtiyacına göre düzenle
+  email: "info@cboyapi.com",
 };
 
-const SHOW_MAP = false; // dilediğinde true yap
+const SHOW_MAP = false;
 
 export default function ContactPage() {
   const [form, setForm] = useState<Form>({
@@ -36,11 +36,9 @@ export default function ContactPage() {
     trap: "",
   });
   const [busy, setBusy] = useState(false);
-  const [msg, setMsg] = useState<{ type: "ok" | "err"; text: string } | null>(
-    null
-  );
+  const [msg, setMsg] = useState<{ type: "ok" | "err"; text: string } | null>(null);
 
-  // Basit captcha (a + b)
+  // Captcha
   const [a, setA] = useState(1);
   const [b, setB] = useState(1);
   useEffect(() => {
@@ -53,12 +51,12 @@ export default function ContactPage() {
     setForm((p) => ({ ...p, [key]: v }));
 
   const validate = () => {
-    if (!form.name.trim()) return "Lütfen adınızı girin.";
+    if (!form.name.trim()) return "Ad soyad gerekli.";
     if (!form.email.trim() || !/^\S+@\S+\.\S+$/.test(form.email))
-      return "Geçerli bir e-posta girin.";
+      return "Geçerli e-posta girin.";
     if (!form.message.trim() || form.message.trim().length < 10)
       return "Mesaj en az 10 karakter olmalı.";
-    if (form.trap && form.trap.trim().length > 0) return "İşlem engellendi.";
+    if (form.trap?.trim()) return "İşlem engellendi.";
     if (form.captcha.trim() !== answer) return "Captcha yanlış.";
     return null;
   };
@@ -86,27 +84,13 @@ export default function ContactPage() {
           page: "/iletisim",
         },
       });
-      setMsg({
-        type: "ok",
-        text: "Mesajınız alındı. En kısa sürede dönüş yapacağız.",
-      });
-      setForm({
-        name: "",
-        email: "",
-        phone: "",
-        website: "",
-        message: "",
-        captcha: "",
-        trap: "",
-      });
+      setMsg({ type: "ok", text: "Mesajınız alındı. En kısa sürede dönüş yapacağız." });
+      setForm({ name: "", email: "", phone: "", website: "", message: "", captcha: "", trap: "" });
       setA(Math.floor(Math.random() * 7) + 3);
       setB(Math.floor(Math.random() * 7) + 3);
     } catch (e) {
       console.error(e);
-      setMsg({
-        type: "err",
-        text: "Mesaj gönderilirken bir hata oluştu. Lütfen tekrar deneyin.",
-      });
+      setMsg({ type: "err", text: "Gönderim hatası. Lütfen tekrar deneyin." });
     } finally {
       setBusy(false);
     }
@@ -114,29 +98,28 @@ export default function ContactPage() {
 
   return (
     <main className="min-h-screen bg-white mt-20">
-      <div className="max-w-7xl mx-auto px-6 py-12">
+      <div className="max-w-7xl mx-auto px-6 py-16">
         {/* Başlık */}
-        <header className="text-center mb-10">
-          <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight">
-            <span className="bg-gradient-to-r from-[#155dfc] to-[#8cc1ff] bg-clip-text text-transparent">
+        <header className="text-center mb-14">
+          <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight">
+            <span className="bg-gradient-to-r from-slate-600 to-slate-300 bg-clip-text text-transparent">
               İletişim
             </span>
           </h1>
-          <p className="mt-3 text-gray-600 max-w-2xl mx-auto">
-            Sorularınız ve teklif talepleriniz için formu doldurun; ekibimiz
-            en kısa sürede sizinle iletişime geçsin.
+          <p className="mt-4 text-lg text-slate-600 max-w-2xl mx-auto">
+            Teklif talebi, soru veya keşif için formu doldurun. 24 saat içinde dönüş yapalım.
           </p>
         </header>
 
-        {/* Kart: Form + Bilgi Bloğu */}
-        <section className="rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
-          {/* Üst şerit */}
-          <div className="h-1 w-full bg-gradient-to-r from-[#155dfc] via-[#4e96ff] to-[#8cc1ff]" />
+        {/* Ana Kart */}
+        <section className="rounded-3xl shadow-2xl border border-slate-100 overflow-hidden bg-white">
+          {/* Gradient şerit */}
+          <div className="h-2 w-full bg-gradient-to-r from-slate-600 via-slate-500 to-slate-400" />
 
           <div className="grid grid-cols-1 lg:grid-cols-3">
-            {/* Sol: Form */}
-            <div className="lg:col-span-2 p-6 md:p-8">
-              <form onSubmit={onSubmit} className="space-y-5">
+            {/* FORM – Sol */}
+            <div className="lg:col-span-2 p-8 md:p-12">
+              <form onSubmit={onSubmit} className="space-y-7">
                 {/* Honeypot */}
                 <input
                   type="text"
@@ -147,110 +130,44 @@ export default function ContactPage() {
                   autoComplete="off"
                 />
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label
-                      htmlFor="name"
-                      className="block text-sm font-medium text-gray-700"
-                    >
-                      Ad Soyad <span className="text-red-500">*</span>
-                    </label>
-                    <input
-                      id="name"
-                      type="text"
-                      value={form.name}
-                      onChange={(e) => update("name", e.target.value)}
-                      placeholder="Adınız Soyadınız"
-                      className="mt-2 w-full rounded-lg border border-gray-300 px-4 py-2.5 text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#155dfc] focus:border-[#155dfc]"
-                    />
-                  </div>
-                  <div>
-                    <label
-                      htmlFor="email"
-                      className="block text-sm font-medium text-gray-700"
-                    >
-                      E-posta <span className="text-red-500">*</span>
-                    </label>
-                    <input
-                      id="email"
-                      type="email"
-                      value={form.email}
-                      onChange={(e) => update("email", e.target.value)}
-                      placeholder="ornek@domain.com"
-                      className="mt-2 w-full rounded-lg border border-gray-300 px-4 py-2.5 text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#155dfc] focus:border-[#155dfc]"
-                    />
-                  </div>
-                  <div>
-                    <label
-                      htmlFor="phone"
-                      className="block text-sm font-medium text-gray-700"
-                    >
-                      Telefon
-                    </label>
-                    <input
-                      id="phone"
-                      type="tel"
-                      value={form.phone}
-                      onChange={(e) => update("phone", e.target.value)}
-                      placeholder="05xx xxx xx xx"
-                      className="mt-2 w-full rounded-lg border border-gray-300 px-4 py-2.5 text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#155dfc] focus:border-[#155dfc]"
-                    />
-                  </div>
-                  <div>
-                    <label
-                      htmlFor="website"
-                      className="block text-sm font-medium text-gray-700"
-                    >
-                      Web Sitesi (Opsiyonel)
-                    </label>
-                    <input
-                      id="website"
-                      type="url"
-                      value={form.website}
-                      onChange={(e) => update("website", e.target.value)}
-                      placeholder="https://"
-                      className="mt-2 w-full rounded-lg border border-gray-300 px-4 py-2.5 text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#155dfc] focus:border-[#155dfc]"
-                    />
-                  </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <Input label="Ad Soyad *" id="name" value={form.name} onChange={(v) => update("name", v)} placeholder="Adınız Soyadınız" />
+                  <Input label="E-posta *" id="email" type="email" value={form.email} onChange={(v) => update("email", v)} placeholder="ornek@domain.com" />
+                  <Input label="Telefon" id="phone" type="tel" value={form.phone} onChange={(v) => update("phone", v)} placeholder="05xx xxx xx xx" />
+                  <Input label="Web Sitesi" id="website" type="url" value={form.website} onChange={(v) => update("website", v)} placeholder="https://ornek.com" />
                 </div>
 
                 <div>
-                  <label
-                    htmlFor="message"
-                    className="block text-sm font-medium text-gray-700"
-                  >
-                    Mesajınız <span className="text-red-500">*</span>
+                  <label htmlFor="message" className="block text-sm font-semibold text-slate-700 mb-2">
+                    Mesajınız *
                   </label>
                   <textarea
                     id="message"
-                    rows={6}
+                    rows={7}
                     value={form.message}
                     onChange={(e) => update("message", e.target.value)}
                     placeholder="Projenizden kısaca bahsedin..."
-                    className="mt-2 w-full rounded-lg border border-gray-300 px-4 py-3 text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#155dfc] focus:border-[#155dfc]"
+                    className="w-full rounded-2xl border border-slate-200 px-5 py-4 text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-4 focus:ring-slate-200 focus:border-slate-500 transition"
                   />
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
-                  <div className="md:col-span-2">
-                    <label
-                      htmlFor="captcha"
-                      className="block text-sm font-medium text-gray-700"
-                    >
+                {/* Captcha + Gönder */}
+                <div className="flex flex-col md:flex-row gap-5 items-end">
+                  <div className="flex-1">
+                    <label className="block text-sm font-semibold text-slate-700 mb-2">
                       Güvenlik Doğrulaması
                     </label>
-                    <div className="mt-2 flex items-center gap-3">
-                      <span className="inline-flex items-center justify-center h-11 px-8 rounded-lg border border-gray-300 bg-gray-50 text-gray-700">
-                        {a}+{b}=
-                      </span>
+                    <div className="flex items-center gap-4">
+                      <div className="flex items-center justify-center h-14 px-8 rounded-xl bg-slate-100 text-slate-700 font-bold text-lg border border-slate-300">
+                        {a} + {b} =
+                      </div>
                       <input
-                        id="captcha"
                         type="text"
                         inputMode="numeric"
                         value={form.captcha}
                         onChange={(e) => update("captcha", e.target.value)}
-                        placeholder="Cevap"
-                        className="w-full rounded-lg border border-gray-300 px-4 py-2.5 text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#155dfc] focus:border-[#155dfc]"
+                        placeholder="?"
+                        className="w-28 rounded-xl border border-slate-300 px-4 py-3.5 text-center text-lg font-medium focus:outline-none focus:ring-4 focus:ring-slate-200"
                       />
                     </div>
                   </div>
@@ -258,18 +175,33 @@ export default function ContactPage() {
                   <button
                     type="submit"
                     disabled={busy}
-                    className="inline-flex items-center justify-center h-11 px-6 rounded-lg font-semibold bg-[#155dfc] text-white hover:brightness-110 active:scale-[0.99] shadow-md hover:shadow-lg transition disabled:opacity-60"
+                    className="
+                      group relative px-10 py-4 rounded-2xl font-bold text-white text-lg
+                      bg-gradient-to-r from-slate-600 to-slate-700
+                      hover:from-slate-700 hover:to-slate-800
+                      shadow-xl hover:shadow-2xl
+                      transition-all duration-300 hover:-translate-y-0.5
+                      disabled:opacity-60 disabled:cursor-not-allowed
+                    "
                   >
-                    {busy ? "Gönderiliyor..." : "Gönder"}
+                    <span className="flex items-center gap-2">
+                      {busy ? "Gönderiliyor..." : "Gönder"}
+                      {!busy && (
+                        <svg className="w-5 h-5 transition-transform group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                        </svg>
+                      )}
+                    </span>
                   </button>
                 </div>
 
+                {/* Mesaj */}
                 {msg && (
                   <div
-                    className={`rounded-lg px-4 py-3 text-sm ${
+                    className={`rounded-2xl p-5 text-sm font-medium border ${
                       msg.type === "ok"
-                        ? "bg-green-50 text-green-700 border border-green-200"
-                        : "bg-red-50 text-red-700 border border-red-200"
+                        ? "bg-emerald-50 text-emerald-700 border-emerald-200"
+                        : "bg-red-50 text-red-700 border-red-200"
                     }`}
                   >
                     {msg.text}
@@ -278,88 +210,72 @@ export default function ContactPage() {
               </form>
             </div>
 
-            {/* Sağ: Bilgi Bloğu */}
-            <aside className="bg-gray-50 p-6 md:p-8">
-              <div className="rounded-2xl overflow-hidden border border-gray-200 bg-white shadow-sm">
-                <div className="bg-[#e30000] text-white px-6 py-3 font-semibold">
-                  {CONTACT.title}
+            {/* BİLGİ – Sağ */}
+            <aside className="bg-gradient-to-b from-slate-50 to-white p-8 md:p-12">
+              <div className="space-y-8">
+                <div className="text-center">
+                  <h2 className="text-2xl font-bold text-slate-800">{CONTACT.title}</h2>
+                  <p className="mt-2 text-sm text-slate-600">Hızlı iletişim, hızlı çözüm</p>
                 </div>
-                <div className="p-6 space-y-5 text-sm text-gray-700">
-                  <Item
+
+                <div className="space-y-7">
+                  <InfoItem
                     icon={
-                      <svg
-                        viewBox="0 0 24 24"
-                        className="w-5 h-5"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                      >
-                        <path d="M12 2C8 2 4.5 5 4.5 9c0 5.25 7.5 13 7.5 13s7.5-7.75 7.5-13c0-4-3.5-7-7.5-7z" />
-                        <circle cx="12" cy="9" r="2.5" />
+                      <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                       </svg>
                     }
                     title="Adres"
                   >
-                    <span className="whitespace-pre-line">{CONTACT.address}</span>
-                  </Item>
+                    <span className="whitespace-pre-line text-sm">{CONTACT.address}</span>
+                  </InfoItem>
 
-                  <Item
+                  <InfoItem
                     icon={
-                      <svg
-                        viewBox="0 0 24 24"
-                        className="w-5 h-5"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                      >
-                        <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6A19.79 19.79 0 0 1 2.09 4.18 2 2 0 0 1 4.06 2h3a2 2 0 0 1 2 1.72c.12.89.31 1.76.57 2.6a2 2 0 0 1-.45 2.11L8 9a16 16 0 0 0 7 7l.57-1.18a2 2 0 0 1 2.11-.45c.84.26 1.71.45 2.6.57A2 2 0 0 1 22 16.92z" />
+                      <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
                       </svg>
                     }
                     title="Telefon"
                   >
-                    <a
-                      href={`tel:${CONTACT.phone.replace(/\s/g, "")}`}
-                      className="hover:underline"
-                    >
+                    <a href={`tel:${CONTACT.phone.replace(/\s/g, "")}`} className="text-slate-700 hover:text-slate-900 font-medium">
                       {CONTACT.phone}
                     </a>
-                  </Item>
+                  </InfoItem>
 
-                  <Item
+                  <InfoItem
                     icon={
-                      <svg
-                        viewBox="0 0 24 24"
-                        className="w-5 h-5"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                      >
-                        <path d="M4 4h16v16H4z" />
-                        <path d="m22 6-10 7L2 6" />
+                      <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                       </svg>
                     }
                     title="E-posta"
                   >
-                    <a
-                      href={`mailto:${CONTACT.email}`}
-                      className="hover:underline break-all"
-                    >
+                    <a href={`mailto:${CONTACT.email}`} className="text-slate-700 hover:text-slate-900 font-medium break-all">
                       {CONTACT.email}
                     </a>
-                  </Item>
+                  </InfoItem>
+                </div>
 
-                  {SHOW_MAP && (
-                    <div className="pt-2">
-                      <div className="h-48 w-full overflow-hidden rounded-xl border">
-                        <iframe
-                          className="w-full h-full"
-                          loading="lazy"
-                          referrerPolicy="no-referrer-when-downgrade"
-                          src="https://www.google.com/maps?q=KAPAKLI%20TEKİRDAĞ&output=embed"
-                        />
-                      </div>
+                {SHOW_MAP && (
+                  <div className="mt-8">
+                    <div className="h-64 rounded-2xl overflow-hidden border-2 border-slate-200 shadow-lg">
+                      <iframe
+                        className="w-full h-full"
+                        loading="lazy"
+                        referrerPolicy="no-referrer-when-downgrade"
+                        src="https://www.google.com/maps/embed/v1/place?key=YOUR_API_KEY&q=KAPAKLI+TEK%C4%B0RDA%C4%9E"
+                      />
                     </div>
-                  )}
+                  </div>
+                )}
+
+                <div className="pt-6 border-t border-slate-200">
+                  <p className="text-xs text-slate-500 text-center">
+                    Mesajınız 256-bit şifreleme ile korunur. <br />
+                    Detaylar için <a href="/gizlilik-politikasi" className="underline hover:text-slate-700">Gizlilik Politikası</a>.
+                  </p>
                 </div>
               </div>
             </aside>
@@ -370,22 +286,48 @@ export default function ContactPage() {
   );
 }
 
-/* ——— Yardımcı küçük bileşen ——— */
-function Item({
-  icon,
-  title,
-  children,
+/* Yardımcı Bileşenler */
+function Input({
+  label,
+  id,
+  type = "text",
+  value,
+  onChange,
+  placeholder,
 }: {
-  icon: React.ReactNode;
-  title: string;
-  children: React.ReactNode;
+  label: string;
+  id: string;
+  type?: string;
+  value: string;
+  onChange: (v: string) => void;
+  placeholder: string;
 }) {
   return (
-    <div className="flex items-start gap-3">
-      <span className="mt-1 text-gray-700">{icon}</span>
+    <div>
+      <label htmlFor={id} className="block text-sm font-semibold text-slate-700 mb-2">
+        {label}
+      </label>
+      <input
+        id={id}
+        type={type}
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        placeholder={placeholder}
+        className="w-full rounded-2xl border border-slate-200 px-5 py-3.5 text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-4 focus:ring-slate-200 focus:border-slate-500 transition"
+      />
+    </div>
+  );
+}
+
+function InfoItem({ icon, title, children }: { icon: React.ReactNode; title: string; children: React.ReactNode }) {
+  return (
+    <div className="flex gap-4 items-start group">
+      <div className="w-12 h-12 rounded-full bg-slate-100 flex items-center justify-center text-slate-600 group-hover:bg-slate-200 transition">
+        {icon}
+      </div>
       <div>
-        <div className="text-xs font-semibold text-gray-900">{title}</div>
-        <div className="mt-1">{children}</div>
+        <p className="text-xs font-bold text-slate-900 uppercase tracking-wider">{title}</p>
+        <div className="mt-1 text-sm text-slate-700">{children}</div>
       </div>
     </div>
   );

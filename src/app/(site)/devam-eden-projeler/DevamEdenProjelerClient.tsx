@@ -54,65 +54,145 @@ export default function DevamEdenProjelerPage() {
   return (
     <main className="min-h-screen bg-white mt-20">
       <div className="max-w-7xl mx-auto px-6 py-10">
-        <header className="text-center mb-8">
+        <header className="text-center mb-10">
           <h1 className="text-3xl md:text-4xl font-extrabold">
-            <span className="bg-gradient-to-r from-[#155dfc] to-[#8cc1ff] bg-clip-text text-transparent">
+            <span className="bg-gradient-to-r from-slate-600 to-slate-300 bg-clip-text text-transparent">
               Devam Eden Projeler
             </span>
           </h1>
-          <p className="mt-2 text-gray-600">Şu anda yapımı süren projelerimiz.</p>
+          <p className="mt-3 text-lg text-slate-600 max-w-2xl mx-auto">
+            Şu anda yapımı süren projelerimiz. Her biri titizlikle planlanıyor, en yüksek kaliteyle inşa ediliyor.
+          </p>
         </header>
 
+        {/* Loading */}
         {projects === null && (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-7">
             {[...Array(6)].map((_, i) => (
-              <div key={i} className="animate-pulse rounded-xl border border-gray-200 bg-white p-4">
-                <div className="h-40 w-full rounded-lg bg-gray-200" />
-                <div className="mt-3 h-4 w-1/2 bg-gray-200 rounded" />
-                <div className="mt-2 h-3 w-3/4 bg-gray-200 rounded" />
+              <div
+                key={i}
+                className="rounded-2xl bg-white shadow-md border border-slate-100 p-5 animate-pulse"
+              >
+                <div className="h-52 w-full rounded-xl bg-slate-200" />
+                <div className="mt-4 h-6 w-4/5 bg-slate-200 rounded" />
+                <div className="mt-3 h-4 w-full bg-slate-200 rounded" />
               </div>
             ))}
           </div>
         )}
 
+        {/* Boş Durum */}
         {projects && projects.length === 0 && (
-          <div className="rounded-xl border border-dashed border-gray-300 p-8 text-center text-gray-600">
-            Devam eden proje bulunmuyor.
+          <div className="rounded-2xl border-2 border-dashed border-slate-200 p-12 text-center bg-slate-50">
+            <svg
+              className="w-16 h-16 mx-auto text-slate-400 mb-4"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={1.5}
+                d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h-4m-6 0H5"
+              />
+            </svg>
+            <p className="text-xl font-medium text-slate-700">Şu anda devam eden proje bulunmuyor.</p>
+            <p className="mt-2 text-slate-500">Yeni projeler başladığında burada görünecek.</p>
           </div>
         )}
 
+        {/* Projeler */}
         {projects && projects.length > 0 && (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-7">
             {projects.map((p) => {
               const cover = (p.images && p.images[0]) || p.coverUrl || "/placeholder.jpg";
+
               return (
                 <Link
                   key={p.id}
                   href={{ pathname: "/proje-detay", query: { id: p.id } }}
-                  className="rounded-2xl bg-white border border-gray-100 shadow hover:shadow-md transition block"
+                  className="
+                    group block focus:outline-none
+                    rounded-2xl bg-white shadow-lg border border-slate-100
+                    transition-all duration-300
+                    hover:-translate-y-2 hover:shadow-2xl
+                    overflow-hidden
+                  "
                 >
-                  <div className="relative h-40 w-full overflow-hidden rounded-t-2xl">
+                  {/* Görsel */}
+                  <div className="relative h-56 w-full">
                     <Image
                       src={cover}
                       alt={p.name}
                       fill
-                      className="object-cover"
+                      className="object-cover transition-transform duration-500 group-hover:scale-105"
                       sizes="(max-width: 1024px) 100vw, 33vw"
                     />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                    <span
+                      className="
+                        absolute bottom-3 left-3 text-xs px-3 py-1.5
+                        rounded-full bg-amber-100 text-amber-800
+                        border border-amber-300 font-semibold
+                      "
+                    >
+                      Devam Ediyor
+                    </span>
                   </div>
-                  <div className="p-4">
-                    <div className="flex items-center justify-between">
-                      <h3 className="font-semibold text-gray-900">{p.name}</h3>
-                      <span className="text-xs px-2 py-1 rounded-full border bg-amber-50 text-amber-700 border-amber-200">
-                        Devam Eden
-                      </span>
-                    </div>
+
+                  {/* İçerik */}
+                  <div className="p-6">
+                    <h3 className="text-xl font-bold text-slate-800 group-hover:text-slate-900 transition">
+                      {p.name}
+                    </h3>
+
                     {p.location && (
-                      <p className="mt-1 text-xs text-gray-500">{p.location}</p>
+                      <p className="mt-2 text-sm text-slate-600 flex items-center gap-1.5">
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
+                          />
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
+                          />
+                        </svg>
+                        {p.location}
+                      </p>
                     )}
+
                     {p.description && (
-                      <p className="mt-2 text-sm text-gray-600 line-clamp-3">{p.description}</p>
+                      <p className="mt-3 text-sm text-slate-600 line-clamp-3 leading-relaxed">
+                        {p.description}
+                      </p>
                     )}
+                  </div>
+
+                  {/* CTA */}
+                  <div className="px-6 pb-6">
+                    <span
+                      className="
+                        inline-flex items-center text-sm font-semibold text-slate-600
+                        opacity-0 translate-y-1 group-hover:opacity-100 group-hover:translate-y-0
+                        transition-all duration-300
+                      "
+                    >
+                      Projeyi İncele
+                      <svg
+                        className="ml-1.5 w-4 h-4 transition-transform group-hover:translate-x-1"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                      </svg>
+                    </span>
                   </div>
                 </Link>
               );

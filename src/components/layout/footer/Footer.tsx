@@ -22,7 +22,7 @@ export default function Footer() {
   return (
     <footer className="relative overflow-hidden bg-slate-950 text-slate-200">
       {/* üst çizgi – marka rengi */}
-      <div className="h-1 w-full bg-gradient-to-r from-blue-500 via-blue-600 to-blue-700" />
+      <div className="h-1 w-full bg-gradient-to-r from-slate-500 via-slate-600 to-slate-700" />
 
       {/* arka plan radial glow */}
       <div
@@ -30,7 +30,7 @@ export default function Footer() {
         className="pointer-events-none absolute inset-0 opacity-20"
         style={{
           background:
-            "radial-gradient(800px 400px at 20% 0%, rgba(59,130,246,.45), transparent 60%), radial-gradient(700px 300px at 90% 10%, rgba(37,99,235,.35), transparent 60%)",
+            "radial-gradient(800px 400px at 20% 0%, rgba(100,116,139,.45), transparent 60%), radial-gradient(700px 300px at 90% 10%, rgba(71,85,105,.35), transparent 60%)",
         }}
       />
 
@@ -39,7 +39,7 @@ export default function Footer() {
         <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-6 backdrop-blur-sm">
           <div className="flex items-center gap-2 mb-4">
             <Image
-              src="/logo/logo.png"
+              src="/logo/logobeyaz.png"
               alt="CBO İnşaat Logo"
               width={80}
               height={80}
@@ -58,12 +58,12 @@ export default function Footer() {
         <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-6 backdrop-blur-sm">
           <h3 className="text-white font-semibold text-lg mb-4">Hızlı Linkler</h3>
           <ul className="grid grid-cols-2 gap-y-3 text-slate-300">
-            <li><Link className="hover:text-white transition" href="/">Anasayfa</Link></li>
-            <li><Link className="hover:text-white transition" href="/tum-hizmetler">Hizmetlerimiz</Link></li>
-            <li><Link className="hover:text-white transition" href="/tum-projeler">Projelerimiz</Link></li>
-            <li><Link className="hover:text-white transition" href="/hakkimizda">Hakkımızda</Link></li>
-            <li><Link className="hover:text-white transition" href="/iletisim">İletişim</Link></li>
-            <li><Link className="hover:text-white transition" href="/kvkk">KVKK</Link></li>
+            <li><Link className="hover:text-white transition hover:scale-105 inline-block" href="/">Anasayfa</Link></li>
+            <li><Link className="hover:text-white transition hover:scale-105 inline-block" href="/tum-hizmetler">Hizmetlerimiz</Link></li>
+            <li><Link className="hover:text-white transition hover:scale-105 inline-block" href="/tum-projeler">Projelerimiz</Link></li>
+            <li><Link className="hover:text-white transition hover:scale-105 inline-block" href="/hakkimizda">Hakkımızda</Link></li>
+            <li><Link className="hover:text-white transition hover:scale-105 inline-block" href="/iletisim">İletişim</Link></li>
+            <li><Link className="hover:text-white transition hover:scale-105 inline-block" href="/kvkk">KVKK</Link></li>
           </ul>
         </div>
 
@@ -72,15 +72,15 @@ export default function Footer() {
           <h3 className="text-white font-semibold text-lg mb-4">İletişim</h3>
           <ul className="space-y-3 text-slate-300">
             <li className="flex items-start gap-3">
-              <MapPin className="w-5 h-5 mt-0.5 text-blue-400" />
+              <MapPin className="w-5 h-5 mt-0.5 text-slate-400" />
               <span>19 MAYIS MAH. TOYGAR SK. 54 NOLU B.B. NO: 36G KAPAKLI / TEKİRDAĞ</span>
             </li>
             <li className="flex items-center gap-3">
-              <Phone className="w-5 h-5 text-blue-400" />
+              <Phone className="w-5 h-5 text-slate-400" />
               <a href="tel:05111111111" className="hover:text-white transition">0511 111 11 11</a>
             </li>
             <li className="flex items-center gap-3">
-              <Mail className="w-5 h-5 text-blue-400" />
+              <Mail className="w-5 h-5 text-slate-400" />
               <a href="mailto:info@cboinsaat.com" className="hover:text-white transition">info@cboinsaat.com</a>
             </li>
           </ul>
@@ -88,7 +88,7 @@ export default function Footer() {
           <div className="flex items-center gap-3 mt-6">
             <a
               aria-label="Facebook"
-              className="p-2 rounded-full bg-white/5 border border-white/10 hover:bg-white/10 hover:-translate-y-0.5 transition focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="p-2 rounded-full bg-white/5 border border-white/10 hover:bg-white/10 hover:-translate-y-0.5 transition focus:outline-none focus:ring-2 focus:ring-slate-500"
               href="#"
               target="_blank"
               rel="noopener noreferrer"
@@ -97,7 +97,7 @@ export default function Footer() {
             </a>
             <a
               aria-label="X (Twitter)"
-              className="p-2 rounded-full bg-white/5 border border-white/10 hover:bg-white/10 hover:-translate-y-0.5 transition focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="p-2 rounded-full bg-white/5 border border-white/10 hover:bg-white/10 hover:-translate-y-0.5 transition focus:outline-none focus:ring-2 focus:ring-slate-500"
               href="#"
               target="_blank"
               rel="noopener noreferrer"
@@ -107,7 +107,7 @@ export default function Footer() {
             </a>
             <a
               aria-label="LinkedIn"
-              className="p-2 rounded-full bg-white/5 border border-white/10 hover:bg-white/10 hover:-translate-y-0.5 transition focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="p-2 rounded-full bg-white/5 border border-white/10 hover:bg-white/10 hover:-translate-y-0.5 transition focus:outline-none focus:ring-2 focus:ring-slate-500"
               href="#"
               target="_blank"
               rel="noopener noreferrer"
@@ -116,7 +116,7 @@ export default function Footer() {
             </a>
             <a
               aria-label="Instagram"
-              className="p-2 rounded-full bg-white/5 border border-white/10 hover:bg-white/10 hover:-translate-y-0.5 transition focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="p-2 rounded-full bg-white/5 border border-white/10 hover:bg-white/10 hover:-translate-y-0.5 transition focus:outline-none focus:ring-2 focus:ring-slate-500"
               href="#"
               target="_blank"
               rel="noopener noreferrer"

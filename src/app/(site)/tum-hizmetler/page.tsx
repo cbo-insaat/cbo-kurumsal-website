@@ -72,7 +72,7 @@ export default function AllServicesPage() {
         {/* Başlık */}
         <div className="text-center mb-8">
           <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight">
-            <span className="bg-gradient-to-r from-[#155dfc] to-[#8cc1ff] bg-clip-text text-transparent">
+            <span className="bg-gradient-to-r from-slate-600 to-slate-300 bg-clip-text text-transparent">
               Tüm Hizmetler
             </span>
           </h1>
@@ -89,7 +89,7 @@ export default function AllServicesPage() {
               value={qText}
               onChange={(e) => setQText(e.target.value)}
               placeholder="Hizmetlerde ara…"
-              className="w-full rounded-lg border border-gray-300 px-4 py-2.5 pr-10 text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#155dfc] focus:border-[#155dfc]"
+              className="w-full rounded-lg border border-gray-300 px-4 py-2.5 pr-10 text-gray-900 focus:outline-none focus:ring-2 focus:ring-slate-600 focus:border-slate-600"
             />
             <svg
               className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400"
@@ -105,7 +105,7 @@ export default function AllServicesPage() {
 
           {filtered && (
             <span className="text-sm text-gray-500">
-              Toplam: <b>{filtered.length}</b> hizmet
+              Toplam: <b>{filtered.length}</b> Hizmet
             </span>
           )}
         </div>
@@ -160,7 +160,7 @@ export default function AllServicesPage() {
                 <div className="px-4 pb-4">
                   <span
                     className="
-                      inline-flex items-center text-sm font-medium text-[#155dfc]
+                      inline-flex items-center text-sm font-medium text-slate-600
                       opacity-0 translate-y-1 group-hover:opacity-100 group-hover:translate-y-0
                       transition-all duration-300
                     "

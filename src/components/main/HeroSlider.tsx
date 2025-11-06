@@ -39,7 +39,7 @@ export default function HeroSlider({ items }: { items: SliderItem[] }) {
                 }`}
               >
                 <h1 className="text-white text-5xl md:text-6xl font-extrabold drop-shadow mb-6">
-                  <span className="text-blue-500">{firstWord}</span>{" "}
+                  <span className="text-slate-500">{firstWord}</span>{" "}
                   {rest}
                 </h1>
                 <h2 className="text-white/90 text-2xl md:text-3xl font-semibold mb-6">
@@ -52,8 +52,8 @@ export default function HeroSlider({ items }: { items: SliderItem[] }) {
                 {/* Projeler butonu */}
                 <a
                   href="/tum-projeler"
-                  className={`inline-block bg-blue-600 text-white font-semibold px-8 py-3 rounded-xl shadow-lg 
-                  hover:bg-blue-700 hover:shadow-blue-500/50 transform hover:scale-105 transition-all duration-500 ${
+                  className={`inline-block bg-slate-600 text-white font-semibold px-8 py-3 rounded-xl shadow-lg 
+                  hover:bg-slate-700 hover:shadow-slate-500/50 transform hover:scale-105 transition-all duration-500 ${
                     i === idx ? "opacity-100 translate-y-0" : "opacity-0 translate-y-10"
                   }`}
                 >

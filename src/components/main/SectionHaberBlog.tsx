@@ -4,6 +4,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
+import { motion } from "framer-motion";
 import { db } from "@/firebase/config";
 import {
   collection,
@@ -39,7 +40,7 @@ function toMillis(ts?: Timestamp | null): number {
     // Firestore Timestamp
     // @ts-ignore
     if (typeof ts.toMillis === "function") return ts.toMillis();
-    // String date fallback (nadiren)
+    // String date fallback
     // @ts-ignore
     if (typeof ts === "string") return new Date(ts as any).getTime() || 0;
     return 0;
@@ -54,7 +55,7 @@ export default function SectionHaberBlog() {
   useEffect(() => {
     (async () => {
       try {
-        // 1) Tercih edilen sorgu: status == published + orderBy(createdAt desc)
+        // 1) published + createdAt desc
         const q1 = query(
           collection(db, "posts"),
           where("status", "==", "published"),
@@ -81,11 +82,11 @@ export default function SectionHaberBlog() {
       } catch (e) {
         console.warn("Index olabilir, fallback’e geçiliyor…", e);
         try {
-          // 2) Fallback: orderBy olmadan çek, istemci tarafında createdAt’a göre sırala
+          // 2) Fallback: orderBy olmadan çek -> client-side sort
           const q2 = query(
             collection(db, "posts"),
             where("status", "==", "published"),
-            limit(12) // fazladan alıp client-side sort sonrası 6’ya düşürüyoruz
+            limit(12)
           );
           const snap2 = await getDocs(q2);
           let list2: PostDoc[] = snap2.docs.map((d) => {
@@ -117,13 +118,38 @@ export default function SectionHaberBlog() {
     })();
   }, []);
 
+  // ---- Animasyon varyantları ----
+  const container = {
+    hidden: { opacity: 0 },
+    show: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.2,
+      },
+    },
+  };
+
+  const item = {
+    hidden: { opacity: 0, y: 50, scale: 0.98 },
+    show: {
+      opacity: 1,
+      y: 0,
+      scale: 1,
+      transition: {
+        duration: 0.6,
+        ease: "easeOut" as const,
+      },
+    },
+  };
+  // --------------------------------
+
   return (
     <section className="py-14 bg-white">
       <div className="max-w-7xl mx-auto px-6">
         {/* Başlık */}
         <div className="text-center mb-10">
           <h2 className="text-3xl md:text-4xl font-extrabold tracking-tight">
-            <span className="bg-gradient-to-r from-[#155dfc] to-[#8cc1ff] bg-clip-text text-transparent">
+            <span className="bg-gradient-to-r from-slate-600 to-slate-300 bg-clip-text text-transparent">
               Haber &amp; Blog
             </span>
           </h2>
@@ -152,9 +178,15 @@ export default function SectionHaberBlog() {
           </div>
         )}
 
-        {/* Grid */}
+        {/* Grid + Animasyon */}
         {posts && posts.length > 0 && (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          <motion.div
+            variants={container}
+            initial="hidden"
+            whileInView="show"
+            viewport={{ once: true, amount: 0.2 }}
+            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"
+          >
             {posts.map((p) => {
               const cover = p.coverUrl || p.images?.[0] || "/placeholder.jpg";
               const dt = p.createdAt?.toDate ? p.createdAt.toDate() : null;
@@ -163,75 +195,76 @@ export default function SectionHaberBlog() {
                 : "";
 
               return (
-                <Link
-                  key={p.id}
-                  href={{ pathname: "/haber-blog-detay", query: { id: p.id } }}
-                  className="
-                    group block focus:outline-none
-                    rounded-2xl bg-white shadow-lg border border-gray-100
-                    transition-all duration-300 hover:-translate-y-1 hover:shadow-xl
-                    overflow-hidden
-                  "
-                >
-                  <div className="relative h-48 w-full">
-                    <Image
-                      src={cover}
-                      alt={p.title || "Blog kapak görseli"}
-                      fill
-                      className="object-cover transition-transform duration-300 group-hover:scale-[1.02]"
-                      sizes="(max-width: 1024px) 100vw, 33vw"
-                    />
-                    {p.category && (
-                      <span className="absolute top-3 left-3 text-xs px-2 py-1 rounded-full border bg-white/90 text-gray-800 border-gray-200">
-                        {p.category}
-                      </span>
-                    )}
-                  </div>
-
-                  <div className="p-4">
-                    <h3 className="text-gray-900 font-semibold text-lg line-clamp-2">
-                      {p.title}
-                    </h3>
-                    <p className="mt-2 text-sm text-gray-600 line-clamp-3">
-                      {excerpt(p.excerpt || p.content)}
-                    </p>
-
-                    <div className="mt-3 flex items-center justify-between text-xs text-gray-500">
-                      <span>{dateStr}</span>
-                      {p.tags && p.tags.length > 0 && (
-                        <span className="truncate max-w-[60%]">
-                          {p.tags.slice(0, 2).join(" · ")}
-                          {p.tags.length > 2 ? " +" : ""}
+                <motion.div key={p.id} variants={item}>
+                  <Link
+                    href={{ pathname: "/haber-blog-detay", query: { id: p.id } }}
+                    className="
+                      group block focus:outline-none
+                      rounded-2xl bg-white shadow-lg border border-gray-100
+                      transition-all duration-300 hover:-translate-y-1 hover:shadow-xl
+                      overflow-hidden
+                    "
+                  >
+                    <div className="relative h-48 w-full">
+                      <Image
+                        src={cover}
+                        alt={p.title || "Blog kapak görseli"}
+                        fill
+                        className="object-cover transition-transform duration-300 group-hover:scale-[1.02]"
+                        sizes="(max-width: 1024px) 100vw, 33vw"
+                      />
+                      {p.category && (
+                        <span className="absolute top-3 left-3 text-xs px-2 py-1 rounded-full border bg-white/90 text-gray-800 border-gray-200">
+                          {p.category}
                         </span>
                       )}
                     </div>
-                  </div>
 
-                  <div className="px-4 pb-4">
-                    <span
-                      className="
-                        inline-flex items-center text-sm font-medium text-[#155dfc]
-                        opacity-0 translate-y-1 group-hover:opacity-100 group-hover:translate-y-0
-                        transition-all duration-300
-                      "
-                    >
-                      Devamını Oku
-                      <svg
-                        className="ml-1 w-4 h-4 transition-transform duration-300 group-hover:translate-x-0.5"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="2"
+                    <div className="p-4">
+                      <h3 className="text-gray-900 font-semibold text-lg line-clamp-2">
+                        {p.title}
+                      </h3>
+                      <p className="mt-2 text-sm text-gray-600 line-clamp-3">
+                        {excerpt(p.excerpt || p.content)}
+                      </p>
+
+                      <div className="mt-3 flex items-center justify-between text-xs text-gray-500">
+                        <span>{dateStr}</span>
+                        {p.tags && p.tags.length > 0 && (
+                          <span className="truncate max-w-[60%]">
+                            {p.tags.slice(0, 2).join(" · ")}
+                            {p.tags.length > 2 ? " +" : ""}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+
+                    <div className="px-4 pb-4">
+                      <span
+                        className="
+                          inline-flex items-center text-sm font-medium text-slate-600
+                          opacity-0 translate-y-1 group-hover:opacity-100 group-hover:translate-y-0
+                          transition-all duration-300
+                        "
                       >
-                        <path d="M5 12h14" />
-                        <path d="M12 5l7 7-7 7" />
-                      </svg>
-                    </span>
-                  </div>
-                </Link>
+                        Devamını Oku
+                        <svg
+                          className="ml-1 w-4 h-4 transition-transform duration-300 group-hover:translate-x-0.5"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                        >
+                          <path d="M5 12h14" />
+                          <path d="M12 5l7 7-7 7" />
+                        </svg>
+                      </span>
+                    </div>
+                  </Link>
+                </motion.div>
               );
             })}
-          </div>
+          </motion.div>
         )}
 
         {/* Alt kısım: Tümünü Gör butonu */}
@@ -240,8 +273,8 @@ export default function SectionHaberBlog() {
             href="/tum-haberler"
             className="
               inline-flex items-center gap-2 px-5 py-2.5 rounded-lg font-semibold
-              bg-[#155dfc] text-white hover:brightness-110 active:scale-[0.98]
-              transition transform shadow-md hover:shadow-lg
+              bg-slate-600 text-white hover:bg-slate-700 active:scale-[0.98]
+              transition transform hover:scale-105 shadow-md hover:shadow-lg
             "
           >
             Tüm Yazılar

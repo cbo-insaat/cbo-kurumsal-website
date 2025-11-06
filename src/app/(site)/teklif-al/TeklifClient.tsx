@@ -140,7 +140,7 @@ export default function TeklifPage() {
         {/* Başlık */}
         <header className="text-center mb-8">
           <h1 className="text-3xl md:text-4xl font-extrabold">
-            <span className="bg-gradient-to-r from-[#155dfc] to-[#8cc1ff] bg-clip-text text-transparent">
+            <span className="bg-gradient-to-r from-slate-600 to-slate-300 bg-clip-text text-transparent">
               Teklif Talebi
             </span>
           </h1>
@@ -177,7 +177,7 @@ export default function TeklifPage() {
                     value={form.fullName}
                     onChange={(e) => update("fullName", e.target.value)}
                     placeholder="Adınız Soyadınız"
-                    className="mt-2 w-full rounded-lg border border-gray-300 px-4 py-2.5 text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#155dfc] focus:border-[#155dfc]"
+                    className="mt-2 w-full rounded-lg border border-gray-300 px-4 py-2.5 text-gray-900 focus:outline-none focus:ring-2 focus:ring-slate-600 focus:border-slate-600"
                   />
                 </div>
                 <div>
@@ -189,7 +189,7 @@ export default function TeklifPage() {
                     value={form.email}
                     onChange={(e) => update("email", e.target.value)}
                     placeholder="ornek@domain.com"
-                    className="mt-2 w-full rounded-lg border border-gray-300 px-4 py-2.5 text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#155dfc] focus:border-[#155dfc]"
+                    className="mt-2 w-full rounded-lg border border-gray-300 px-4 py-2.5 text-gray-900 focus:outline-none focus:ring-2 focus:ring-slate-600 focus:border-slate-600"
                   />
                 </div>
                 <div>
@@ -201,7 +201,7 @@ export default function TeklifPage() {
                     value={form.phone}
                     onChange={(e) => update("phone", e.target.value)}
                     placeholder="05xx xxx xx xx"
-                    className="mt-2 w-full rounded-lg border border-gray-300 px-4 py-2.5 text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#155dfc] focus:border-[#155dfc]"
+                    className="mt-2 w-full rounded-lg border border-gray-300 px-4 py-2.5 text-gray-900 focus:outline-none focus:ring-2 focus:ring-slate-600 focus:border-slate-600"
                   />
                 </div>
                 <div>
@@ -213,7 +213,7 @@ export default function TeklifPage() {
                     value={form.city}
                     onChange={(e) => update("city", e.target.value)}
                     placeholder="Tekirdağ / Kapaklı"
-                    className="mt-2 w-full rounded-lg border border-gray-300 px-4 py-2.5 text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#155dfc] focus:border-[#155dfc]"
+                    className="mt-2 w-full rounded-lg border border-gray-300 px-4 py-2.5 text-gray-900 focus:outline-none focus:ring-2 focus:ring-slate-600 focus:border-slate-600"
                   />
                 </div>
                 <div>
@@ -225,7 +225,7 @@ export default function TeklifPage() {
                     value={form.company}
                     onChange={(e) => update("company", e.target.value)}
                     placeholder="Firma adı"
-                    className="mt-2 w-full rounded-lg border border-gray-300 px-4 py-2.5 text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#155dfc] focus:border-[#155dfc]"
+                    className="mt-2 w-full rounded-lg border border-gray-300 px-4 py-2.5 text-gray-900 focus:outline-none focus:ring-2 focus:ring-slate-600 focus:border-slate-600"
                   />
                 </div>
                 <div>
@@ -235,7 +235,7 @@ export default function TeklifPage() {
                   <select
                     value={form.serviceId}
                     onChange={(e) => update("serviceId", e.target.value)}
-                    className="mt-2 w-full rounded-lg border border-gray-300 px-4 py-2.5 text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#155dfc] focus:border-[#155dfc]"
+                    className="mt-2 w-full rounded-lg border border-gray-300 px-4 py-2.5 text-gray-900 focus:outline-none focus:ring-2 focus:ring-slate-600 focus:border-slate-600"
                   >
                     <option value="">Seçin…</option>
                     {services.map((s) => (
@@ -252,7 +252,7 @@ export default function TeklifPage() {
                   <select
                     value={form.budget}
                     onChange={(e) => update("budget", e.target.value)}
-                    className="mt-2 w-full rounded-lg border border-gray-300 px-4 py-2.5 text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#155dfc] focus:border-[#155dfc]"
+                    className="mt-2 w-full rounded-lg border border-gray-300 px-4 py-2.5 text-gray-900 focus:outline-none focus:ring-2 focus:ring-slate-600 focus:border-slate-600"
                   >
                     <option value="">Seçin…</option>
                     <option value="0-250k">0 – 250.000 TL</option>
@@ -269,7 +269,7 @@ export default function TeklifPage() {
                     type="date"
                     value={form.startDate}
                     onChange={(e) => update("startDate", e.target.value)}
-                    className="mt-2 w-full rounded-lg border border-gray-300 px-4 py-2.5 text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#155dfc] focus:border-[#155dfc]"
+                    className="mt-2 w-full rounded-lg border border-gray-300 px-4 py-2.5 text-gray-900 focus:outline-none focus:ring-2 focus:ring-slate-600 focus:border-slate-600"
                   />
                 </div>
               </div>
@@ -283,7 +283,7 @@ export default function TeklifPage() {
                   value={form.message}
                   onChange={(e) => update("message", e.target.value)}
                   placeholder="Projenizi kısaca anlatın…"
-                  className="mt-2 w-full rounded-lg border border-gray-300 px-4 py-3 text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#155dfc] focus:border-[#155dfc]"
+                  className="mt-2 w-full rounded-lg border border-gray-300 px-4 py-3 text-gray-900 focus:outline-none focus:ring-2 focus:ring-slate-600 focus:border-slate-600"
                 />
               </div>
 
@@ -302,7 +302,7 @@ export default function TeklifPage() {
                       value={form.captcha}
                       onChange={(e) => update("captcha", e.target.value)}
                       placeholder="Cevap"
-                      className="w-full rounded-lg border border-gray-300 px-4 py-2.5 text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#155dfc] focus:border-[#155dfc]"
+                      className="w-full rounded-lg border border-gray-300 px-4 py-2.5 text-gray-900 focus:outline-none focus:ring-2 focus:ring-slate-600 focus:border-slate-600"
                     />
                   </div>
                 </div>
@@ -310,7 +310,7 @@ export default function TeklifPage() {
                 <button
                   type="submit"
                   disabled={busy}
-                  className="inline-flex items-center justify-center h-11 px-6 rounded-lg font-semibold bg-[#e30000] text-white hover:brightness-110 active:scale-[0.99] shadow-md hover:shadow-lg transition disabled:opacity-60"
+                  className="inline-flex items-center justify-center h-11 px-6 rounded-lg font-semibold bg-slate-600 text-white hover:bg-slate-700 active:scale-[0.99] shadow-md hover:shadow-lg transition duration-300 ease-in-out disabled:opacity-60"
                 >
                   {busy ? "Gönderiliyor..." : "Teklif İste"}
                 </button>
@@ -334,7 +334,7 @@ export default function TeklifPage() {
           <aside className="lg:col-span-1">
             <div className="rounded-2xl border border-gray-100 bg-white shadow-sm p-6">
               <h3 className="text-lg font-bold">
-                <span className="bg-gradient-to-r from-[#155dfc] to-[#8cc1ff] bg-clip-text text-transparent">
+                <span className="bg-gradient-to-r from-slate-600 to-slate-300 bg-clip-text text-transparent">
                   Sizi Arayalım
                 </span>
               </h3>

@@ -4,6 +4,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
+import { motion } from "framer-motion";
 import { db } from "@/firebase/config";
 import {
   collection,
@@ -59,13 +60,37 @@ export default function ServicesSection() {
     })();
   }, []);
 
+  // animasyon varyantları
+  const container = {
+    hidden: { opacity: 0 },
+    show: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.2,
+      },
+    },
+  };
+
+  const item = {
+    hidden: { opacity: 0, y: 50, scale: 0.98 },
+    show: {
+      opacity: 1,
+      y: 0,
+      scale: 1,
+      transition: {
+        duration: 0.6,
+        ease: "easeOut" as const,
+      },
+    },
+  };
+
   return (
     <section className="py-14 bg-white">
       <div className="max-w-7xl mx-auto px-6">
-        {/* Başlık + alt açıklama */}
+        {/* Başlık */}
         <div className="text-center mb-10">
           <h2 className="text-3xl md:text-4xl font-extrabold tracking-tight">
-            <span className="bg-gradient-to-r from-[#155dfc] to-[#8cc1ff] bg-clip-text text-transparent">
+            <span className="bg-gradient-to-r from-slate-600 to-slate-300 bg-clip-text text-transparent">
               Hizmetlerimiz
             </span>
           </h2>
@@ -101,71 +126,78 @@ export default function ServicesSection() {
 
         {/* Grid */}
         {services && services.length > 0 && (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          <motion.div
+            variants={container}
+            initial="hidden"
+            whileInView="show"
+            viewport={{ once: true, amount: 0.2 }}
+            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6"
+          >
             {services.map((s) => (
-              <Link
-                key={s.id}
-                href={{ pathname: "/hizmet-detay", query: { id: s.id } }}
-                className="
-                  group block focus:outline-none
-                  rounded-2xl bg-white shadow-lg border border-gray-100
-                  transition-all duration-300
-                  hover:-translate-y-1 hover:shadow-xl
-                "
-              >
-                <div className="relative h-48 w-full overflow-hidden rounded-t-2xl">
-                  <Image
-                    src={s.imageUrl || "/placeholder.jpg"}
-                    alt={s.name}
-                    fill
-                    className="object-cover transition-transform duration-300 group-hover:scale-[1.02]"
-                    sizes="(max-width: 1024px) 100vw, 25vw"
-                  />
-                </div>
+              <motion.div key={s.id} variants={item}>
+                <Link
+                  href={{ pathname: "/hizmet-detay", query: { id: s.id } }}
+                  className="
+                    group block focus:outline-none
+                    rounded-2xl bg-white shadow-lg border border-gray-100
+                    transition-all duration-300
+                    hover:-translate-y-1 hover:shadow-xl
+                  "
+                >
+                  <div className="relative h-48 w-full overflow-hidden rounded-t-2xl">
+                    <Image
+                      src={s.imageUrl || "/placeholder.jpg"}
+                      alt={s.name}
+                      fill
+                      className="object-cover transition-transform duration-300 group-hover:scale-[1.02]"
+                      sizes="(max-width: 1024px) 100vw, 25vw"
+                    />
+                  </div>
 
-                <div className="p-4">
-                  <h3 className="text-gray-900 font-semibold text-lg">
-                    {s.name}
-                  </h3>
-                  <p className="mt-1 text-sm text-gray-600">
-                    {excerpt(s.description)}
-                  </p>
-                </div>
+                  <div className="p-4">
+                    <h3 className="text-gray-900 font-semibold text-lg">
+                      {s.name}
+                    </h3>
+                    <p className="mt-1 text-sm text-gray-600">
+                      {excerpt(s.description)}
+                    </p>
+                  </div>
 
-                <div className="px-4 pb-4">
-                  <span
-                    className="
-                      inline-flex items-center text-sm font-medium text-[#155dfc]
-                      opacity-0 translate-y-1 group-hover:opacity-100 group-hover:translate-y-0
-                      transition-all duration-300
-                    "
-                  >
-                    Detaya Git
-                    <svg
-                      className="ml-1 w-4 h-4 transition-transform duration-300 group-hover:translate-x-0.5"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2"
+                  <div className="px-4 pb-4">
+                    <span
+                      className="
+                        inline-flex items-center text-sm font-medium text-slate-600
+                        opacity-0 translate-y-1 group-hover:opacity-100 group-hover:translate-y-0
+                        transition-all duration-300
+                      "
                     >
-                      <path d="M5 12h14" />
-                      <path d="M12 5l7 7-7 7" />
-                    </svg>
-                  </span>
-                </div>
-              </Link>
+                      Detaya Git
+                      <svg
+                        className="ml-1 w-4 h-4 transition-transform duration-300 group-hover:translate-x-0.5"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                      >
+                        <path d="M5 12h14" />
+                        <path d="M12 5l7 7-7 7" />
+                      </svg>
+                    </span>
+                  </div>
+                </Link>
+              </motion.div>
             ))}
-          </div>
+          </motion.div>
         )}
 
-        {/* Alt kısım: Tümünü Gör butonu */}
+        {/* Alt buton */}
         <div className="mt-10 text-center">
           <Link
             href="/tum-hizmetler"
             className="
               inline-flex items-center gap-2 px-5 py-2.5 rounded-lg font-semibold
-              bg-[#155dfc] text-white hover:brightness-110 active:scale-[0.98]
-              transition transform
+              bg-slate-600 text-white hover:bg-slate-700 active:scale-[0.98]
+              transition transform hover:scale-105
               shadow-md hover:shadow-lg
             "
           >

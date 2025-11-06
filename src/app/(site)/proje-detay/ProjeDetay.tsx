@@ -160,21 +160,21 @@ export default function ProjeDetay({ projectId }: Props) {
             <div className="max-w-7xl mx-auto px-6 py-10">
                 {/* Üst bar */}
                 <div className="mb-6 flex flex-wrap items-center gap-3">
-
                     {project?.status && (
                         <span
-                            className={`text-xs px-2 py-1 rounded-full border ${project.status === "ongoing"
+                            className={`text-xs px-2 py-1 rounded-full border ${
+                                project.status === "ongoing"
                                     ? "bg-amber-50 text-amber-700 border-amber-200"
                                     : "bg-emerald-50 text-emerald-700 border-emerald-200"
-                                }`}
+                            }`}
                         >
                             {project.status === "ongoing" ? "Devam Eden" : "Bitmiş"}
                         </span>
                     )}
                     {service && (
                         <Link
-                            href={{ pathname: "/hizmetler", query: { id: service.id } }}
-                            className="text-xs px-2 py-1 rounded-full border border-blue-100 bg-blue-50 text-blue-700 hover:brightness-110"
+                            href={{ pathname: "/hizmet-detay", query: { id: service.id } }}
+                            className="text-xs px-2 py-1 rounded-full border border-slate-200 bg-slate-50 text-slate-700 hover:bg-slate-100 transition"
                         >
                             Hizmet: {service.name}
                         </Link>
@@ -208,7 +208,7 @@ export default function ProjeDetay({ projectId }: Props) {
                             <div className="relative">
                                 <div className="relative h-[420px] w-full overflow-hidden rounded-2xl border border-gray-100 shadow">
                                     <Image
-                                        key={images[active]} // blurları tetikler
+                                        key={images[active]}
                                         src={images[active]}
                                         alt={project.name || "Proje görseli"}
                                         fill
@@ -220,7 +220,7 @@ export default function ProjeDetay({ projectId }: Props) {
                                         <>
                                             <button
                                                 onClick={prev}
-                                                className="absolute left-3 top-1/2 -translate-y-1/2 rounded-full bg-white/90 hover:bg-white shadow p-2"
+                                                className="absolute left-3 top-1/2 -translate-y-1/2 rounded-full bg-white/90 hover:bg-white shadow p-2 transition"
                                                 aria-label="Önceki"
                                             >
                                                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
@@ -229,7 +229,7 @@ export default function ProjeDetay({ projectId }: Props) {
                                             </button>
                                             <button
                                                 onClick={next}
-                                                className="absolute right-3 top-1/2 -translate-y-1/2 rounded-full bg-white/90 hover:bg-white shadow p-2"
+                                                className="absolute right-3 top-1/2 -translate-y-1/2 rounded-full bg-white/90 hover:bg-white shadow p-2 transition"
                                                 aria-label="Sonraki"
                                             >
                                                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
@@ -247,8 +247,11 @@ export default function ProjeDetay({ projectId }: Props) {
                                             <button
                                                 key={i}
                                                 onClick={() => setActive(i)}
-                                                className={`relative h-16 rounded-lg overflow-hidden ring-1 ${i === active ? "ring-blue-400" : "ring-gray-200"
-                                                    }`}
+                                                className={`relative h-16 rounded-lg overflow-hidden ring-2 transition ${
+                                                    i === active
+                                                        ? "ring-slate-600"
+                                                        : "ring-gray-200 hover:ring-slate-300"
+                                                }`}
                                                 aria-label={`Görsel ${i + 1}`}
                                             >
                                                 <Image
@@ -267,7 +270,7 @@ export default function ProjeDetay({ projectId }: Props) {
                             {/* Sağ: Başlık ve detaylar */}
                             <div>
                                 <h1 className="text-3xl md:text-4xl font-extrabold leading-tight">
-                                    <span className="bg-gradient-to-r from-[#155dfc] to-[#8cc1ff] bg-clip-text text-transparent">
+                                    <span className="bg-gradient-to-r from-slate-600 to-slate-300 bg-clip-text text-transparent">
                                         {project.name}
                                     </span>
                                 </h1>
@@ -288,7 +291,7 @@ export default function ProjeDetay({ projectId }: Props) {
                                             <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
                                                 <path d="M8 7V3M16 7V3M3 11h18M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" stroke="currentColor" strokeWidth="2" />
                                             </svg>
-                                            Başlangıç: {project.startedAt.toDate().toLocaleDateString()}
+                                            Başlangıç: {project.startedAt.toDate().toLocaleDateString("tr-TR")}
                                         </span>
                                     )}
                                     {project.finishedAt?.toDate && (
@@ -296,7 +299,7 @@ export default function ProjeDetay({ projectId }: Props) {
                                             <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
                                                 <path d="M8 7V3M16 7V3M3 11h18M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" stroke="currentColor" strokeWidth="2" />
                                             </svg>
-                                            Bitiş: {project.finishedAt.toDate().toLocaleDateString()}
+                                            Bitiş: {project.finishedAt.toDate().toLocaleDateString("tr-TR")}
                                         </span>
                                     )}
                                 </div>
@@ -317,14 +320,14 @@ export default function ProjeDetay({ projectId }: Props) {
                                     {service && (
                                         <Link
                                             href={{ pathname: "/hizmet-detay", query: { id: service.id } }}
-                                            className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-[#155dfc] text-white font-medium hover:brightness-110"
+                                            className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-slate-600 text-white font-medium hover:bg-slate-700 transition transform hover:scale-105"
                                         >
                                             {service.name} hizmetine dön
                                         </Link>
                                     )}
                                     <Link
                                         href="/tum-projeler"
-                                        className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-gray-200 text-gray-700 hover:bg-gray-50"
+                                        className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-slate-200 text-slate-700 hover:bg-slate-50 transition"
                                     >
                                         Tüm projeler
                                     </Link>
@@ -345,14 +348,14 @@ export default function ProjeDetay({ projectId }: Props) {
                                             <Link
                                                 key={p.id}
                                                 href={{ pathname: "/proje-detay", query: { id: p.id } }}
-                                                className="rounded-2xl bg-white border border-gray-100 shadow hover:shadow-md transition block"
+                                                className="group block focus:outline-none rounded-2xl bg-white shadow-lg border border-gray-100 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl"
                                             >
-                                                <div className="relative h-40 w-full overflow-hidden rounded-t-2xl">
+                                                <div className="relative h-48 w-full overflow-hidden rounded-t-2xl">
                                                     <Image
                                                         src={cover}
                                                         alt={p.name}
                                                         fill
-                                                        className="object-cover"
+                                                        className="object-cover transition-transform duration-300 group-hover:scale-[1.02]"
                                                         sizes="(max-width: 1024px) 100vw, 33vw"
                                                     />
                                                 </div>
@@ -361,10 +364,11 @@ export default function ProjeDetay({ projectId }: Props) {
                                                         <h3 className="font-semibold text-gray-900">{p.name}</h3>
                                                         {p.status && (
                                                             <span
-                                                                className={`text-xs px-2 py-1 rounded-full border ${p.status === "ongoing"
+                                                                className={`text-xs px-2 py-1 rounded-full border ${
+                                                                    p.status === "ongoing"
                                                                         ? "bg-amber-50 text-amber-700 border-amber-200"
                                                                         : "bg-emerald-50 text-emerald-700 border-emerald-200"
-                                                                    }`}
+                                                                }`}
                                                             >
                                                                 {p.status === "ongoing" ? "Devam Eden" : "Bitmiş"}
                                                             </span>

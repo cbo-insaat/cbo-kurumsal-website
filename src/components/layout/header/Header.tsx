@@ -31,6 +31,7 @@ export default function Header() {
   }, [mobileOpen]);
 
   const linkColor = scrolled ? "text-gray-900" : "text-white";
+  const logoSrc = scrolled ? "/logo/logo.png" : "/logo/logobeyaz.png";
 
   return (
     <header
@@ -41,7 +42,7 @@ export default function Header() {
         {/* Logo */}
         <Link href="/" className="flex items-center gap-2">
           <Image
-            src="/logo/logo.png"
+            src={logoSrc}
             alt="CBO İnşaat Logo"
             width={100}
             height={100}
@@ -127,7 +128,7 @@ export default function Header() {
         {/* Masaüstü CTA */}
         <Link
           href="/teklif-al"
-          className="hidden md:inline-block bg-blue-600 text-white px-5 py-2 rounded-lg font-semibold hover:bg-blue-700 transition"
+          className="hidden md:inline-block bg-slate-600 text-white px-5 py-2 rounded-lg font-semibold hover:bg-slate-700 transform hover:scale-105 transition duration-300 ease-in-out"
         >
           Teklif Al
         </Link>
@@ -176,7 +177,7 @@ export default function Header() {
           <div className="px-6 pt-4 pb-6 flex items-center justify-between border-b">
             <Link href="/" className="flex items-center gap-2" onClick={() => setMobileOpen(false)}>
               <Image
-                src="/logo/logo.png"
+                src={logoSrc}
                 alt="CBO İnşaat Logo"
                 width={90}
                 height={90}
@@ -269,7 +270,7 @@ export default function Header() {
             <Link
               href="/teklif-al"
               onClick={() => setMobileOpen(false)}
-              className="block w-full text-center bg-blue-600 text-white px-5 py-3 rounded-lg font-semibold hover:bg-blue-700 transition"
+              className="block w-full text-center bg-slate-600 text-white px-5 py-3 rounded-lg font-semibold hover:bg-slate-700 transform hover:scale-105 transition duration-300 ease-in-out"
             >
               Teklif Al
             </Link>

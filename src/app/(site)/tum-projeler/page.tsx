@@ -52,7 +52,7 @@ export default function TumProjelerPage() {
       <div className="max-w-7xl mx-auto px-6 py-10">
         <header className="text-center mb-8">
           <h1 className="text-3xl md:text-4xl font-extrabold">
-            <span className="bg-gradient-to-r from-[#155dfc] to-[#8cc1ff] bg-clip-text text-transparent">
+            <span className="bg-gradient-to-r from-slate-600 to-slate-300 bg-clip-text text-transparent">
               Tüm Projeler
             </span>
           </h1>
@@ -86,14 +86,14 @@ export default function TumProjelerPage() {
                 <Link
                   key={p.id}
                   href={{ pathname: "/proje-detay", query: { id: p.id } }}
-                  className="rounded-2xl bg-white border border-gray-100 shadow hover:shadow-md transition block"
+                  className="group block focus:outline-none rounded-2xl bg-white shadow-lg border border-gray-100 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl"
                 >
-                  <div className="relative h-40 w-full overflow-hidden rounded-t-2xl">
+                  <div className="relative h-48 w-full overflow-hidden rounded-t-2xl">
                     <Image
                       src={cover}
                       alt={p.name || "Proje görseli"}
                       fill
-                      className="object-cover"
+                      className="object-cover transition-transform duration-300 group-hover:scale-[1.02]"
                       sizes="(max-width: 1024px) 100vw, 33vw"
                     />
                   </div>

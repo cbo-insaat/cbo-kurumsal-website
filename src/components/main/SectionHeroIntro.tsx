@@ -109,7 +109,7 @@ export default function SectionHeroIntro({
                 <div>
                     <h1 className="text-4xl md:text-5xl font-extrabold leading-tight text-slate-900">
                         <span className="block">Güvenilir Yapılar,</span>
-                        <span className="bg-gradient-to-r from-[#155dfc] to-[#8cc1ff] bg-clip-text text-transparent">
+                        <span className="bg-gradient-to-r from-slate-500 to-slate-300 bg-clip-text text-transparent">
                             CBO İnşaat İmzasıyla
                         </span>
                     </h1>
@@ -132,7 +132,7 @@ export default function SectionHeroIntro({
                     <div className="mt-8">
                         <Link
                             href={ctaHref}
-                            className="inline-flex items-center px-6 py-3 rounded-xl font-semibold bg-[#155dfc] text-white hover:brightness-110 shadow-md"
+                            className="inline-flex items-center px-6 py-3 rounded-xl font-semibold bg-slate-600 text-white hover:bg-slate-700 transform hover:scale-105 transition duration-300 ease-in-out shadow-md"
                         >
                             {ctaText}
                         </Link>
@@ -155,7 +155,7 @@ export default function SectionHeroIntro({
                     {/* Köşe rozet kartı */}
                     <div className="absolute -bottom-5 left-5">
                         <div className="flex items-center gap-4 bg-white/95 backdrop-blur rounded-2xl shadow-lg border border-gray-100 px-5 py-4">
-                            <div className="h-11 w-11 rounded-xl bg-[#155dfc] text-white grid place-items-center text-lg font-bold">
+                            <div className="h-11 w-11 rounded-xl bg-slate-600 text-white grid place-items-center text-lg font-bold">
                                 25
                             </div>
                             <div>

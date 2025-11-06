@@ -5,7 +5,7 @@ import Link from "next/link";
 
 export default function SectionCallToAction() {
   return (
-    <section className="relative bg-gradient-to-r from-[#155dfc] to-[#8cc1ff] text-white py-32">
+    <section className="relative bg-gradient-to-r from-slate-600 to-slate-300 text-white py-32">
       <div className="max-w-7xl mx-auto px-6 text-center">
         {/* Başlık */}
         <h2 className="text-3xl md:text-4xl font-extrabold mb-4">
@@ -22,14 +22,14 @@ export default function SectionCallToAction() {
         <div className="flex flex-col sm:flex-row justify-center gap-4">
           <Link
             href="/teklif-al"
-            className="inline-block px-8 py-3 rounded-xl bg-white text-[#155dfc] font-semibold hover:bg-gray-100 transition"
+            className="inline-block px-8 py-3 rounded-xl bg-white text-slate-600 font-semibold hover:bg-gray-100 transform hover:scale-105 transition duration-300 ease-in-out"
           >
             Ücretsiz Teklif Al
           </Link>
 
           <Link
             href="/tum-projeler"
-            className="inline-block px-8 py-3 rounded-xl border border-white font-semibold hover:bg-white hover:text-[#155dfc] transition"
+            className="inline-block px-8 py-3 rounded-xl border border-white font-semibold hover:bg-white hover:text-slate-600 transform hover:scale-105 transition duration-300 ease-in-out"
           >
             Projelerimizi İncele
           </Link>
