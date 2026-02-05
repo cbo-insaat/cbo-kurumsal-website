@@ -1,355 +1,212 @@
-// File: app/teklif/page.tsx
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import { db } from "@/firebase/config";
 import { addDoc, collection, serverTimestamp, getDocs, query, orderBy } from "firebase/firestore";
+import { Calculator, Calendar, MapPin, Briefcase, User, Mail, Phone, Send, Sparkles } from "lucide-react";
 
 type Form = {
-  fullName: string;
-  email: string;
-  phone: string;
-  city: string;
-  company?: string;
-  serviceId?: string;
-  budget?: string;
-  startDate?: string; // yyyy-mm-dd
-  message: string;
-  captcha: string;
-  trap?: string; // honeypot
-};
-
-type Service = {
-  id: string;
-  name: string;
+  fullName: string; email: string; phone: string; city: string;
+  company?: string; serviceId?: string; budget?: string;
+  startDate?: string; message: string; trap?: string;
 };
 
 export default function TeklifPage() {
   const [form, setForm] = useState<Form>({
-    fullName: "",
-    email: "",
-    phone: "",
-    city: "",
-    company: "",
-    serviceId: "",
-    budget: "",
-    startDate: "",
-    message: "",
-    captcha: "",
-    trap: "",
+    fullName: "", email: "", phone: "", city: "", company: "",
+    serviceId: "", budget: "", startDate: "", message: "", trap: "",
   });
+  const [services, setServices] = useState<{ id: string, name: string }[]>([]);
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState<{ type: "ok" | "err"; text: string } | null>(null);
-
-  // Hizmet listesi (opsiyonel dropdown)
-  const [services, setServices] = useState<Service[]>([]);
-
-  // Basit captcha (a + b)
-  const [a, setA] = useState(1);
-  const [b, setB] = useState(1);
-  useEffect(() => {
-    setA(Math.floor(Math.random() * 7) + 3); // 3-9
-    setB(Math.floor(Math.random() * 7) + 3); // 3-9
-  }, []);
-  const answer = useMemo(() => String(a + b), [a, b]);
+  const [a, setA] = useState(0);
+  const [b, setB] = useState(0);
 
   useEffect(() => {
+    setA(Math.floor(Math.random() * 5) + 5);
+    setB(Math.floor(Math.random() * 5) + 2);
     (async () => {
-      try {
-        const qy = query(collection(db, "services"), orderBy("createdAt", "desc"));
-        const snap = await getDocs(qy);
-        const list: Service[] = snap.docs.map((d) => {
-          const x = d.data() as any;
-          return { id: d.id, name: x.name || "Hizmet" };
-        });
-        setServices(list);
-      } catch {
-        setServices([]);
-      }
+      const qy = query(collection(db, "services"), orderBy("createdAt", "desc"));
+      const snap = await getDocs(qy);
+      setServices(snap.docs.map(d => ({ id: d.id, name: (d.data() as any).name })));
     })();
   }, []);
 
-  const update = (key: keyof Form, v: string) => setForm((p) => ({ ...p, [key]: v }));
-
-  const validate = () => {
-    if (!form.fullName.trim()) return "Lütfen ad soyad girin.";
-    if (!form.email.trim() || !/^\S+@\S+\.\S+$/.test(form.email)) return "Geçerli bir e-posta girin.";
-    if (!form.phone.trim()) return "Telefon alanı zorunludur.";
-    if (!form.city.trim()) return "Şehir/İlçe bilgisini girin.";
-    if (!form.message.trim() || form.message.trim().length < 10) return "Mesaj en az 10 karakter olmalı.";
-    if (form.trap && form.trap.trim().length > 0) return "İşlem engellendi.";
-    if (form.captcha.trim() !== answer) return "Captcha yanlış.";
-    return null;
-  };
+  const answer = useMemo(() => String(a + b), [a, b]);
 
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setMsg(null);
-    const err = validate();
-    if (err) {
-      setMsg({ type: "err", text: err });
-      return;
-    }
+ 
+    setBusy(true);
     try {
-      setBusy(true);
-      await addDoc(collection(db, "offers"), {
-        fullName: form.fullName.trim(),
-        email: form.email.trim(),
-        phone: form.phone.trim(),
-        city: form.city.trim(),
-        company: form.company?.trim() || null,
-        serviceId: form.serviceId || null,
-        budget: form.budget || null,
-        startDate: form.startDate || null,
-        message: form.message.trim(),
-        status: "new", // admin tarafında işlemek için
-        createdAt: serverTimestamp(),
-        meta: {
-          ua: typeof navigator !== "undefined" ? navigator.userAgent : null,
-          page: "/teklif",
-        },
-      });
-      setMsg({ type: "ok", text: "Talebiniz alındı. En kısa sürede sizinle iletişime geçeceğiz." });
-      // reset + yeni captcha
-      setForm({
-        fullName: "",
-        email: "",
-        phone: "",
-        city: "",
-        company: "",
-        serviceId: "",
-        budget: "",
-        startDate: "",
-        message: "",
-        captcha: "",
-        trap: "",
-      });
-      setA(Math.floor(Math.random() * 7) + 3);
-      setB(Math.floor(Math.random() * 7) + 3);
-    } catch (e) {
-      console.error(e);
-      setMsg({ type: "err", text: "Talep gönderilirken bir sorun oluştu. Lütfen tekrar deneyin." });
-    } finally {
-      setBusy(false);
-    }
+      await addDoc(collection(db, "offers"), { ...form, status: "new", createdAt: serverTimestamp() });
+      setMsg({ type: "ok", text: "Talebiniz başarıyla iletildi. Uzmanlarımız sizi arayacak." });
+      setForm({ fullName: "", email: "", phone: "", city: "", company: "", serviceId: "", budget: "", startDate: "", message: "", trap: "" });
+    } catch {
+      setMsg({ type: "err", text: "Bir hata oluştu." });
+    } finally { setBusy(false); }
   };
 
   return (
-    <main className="min-h-screen bg-white mt-20">
-      <div className="max-w-7xl mx-auto px-6 py-10">
-        {/* Başlık */}
-        <header className="text-center mb-8">
-          <h1 className="text-3xl md:text-4xl font-extrabold">
-            <span className="bg-gradient-to-r from-slate-600 to-slate-300 bg-clip-text text-transparent">
-              Teklif Talebi
-            </span>
-          </h1>
-          <p className="mt-2 text-gray-600">
-            Projeniz için hızlı bir teklif almak üzere formu doldurun.
-          </p>
-        </header>
+    <main className="min-h-screen bg-white pt-32 pb-20 overflow-hidden">
+      <div className="max-w-[1400px] mx-auto px-6">
 
-        {/* Grid: Form + Bilgi Kartı */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Form */}
-          <section className="lg:col-span-2">
-            <form
-              onSubmit={onSubmit}
-              className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 space-y-5"
-            >
-              {/* Honeypot */}
-              <input
-                type="text"
-                value={form.trap}
-                onChange={(e) => update("trap", e.target.value)}
-                className="hidden"
-                tabIndex={-1}
-                autoComplete="off"
-              />
+        {/* HEADER */}
+        <div className="relative mb-24">
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+            <h1 className="text-[10vw] md:text-[110px] font-black leading-[0.85] tracking-tighter uppercase italic text-slate-900">
+              YATIRIMINIZI <br />
+              <span className="text-transparent [-webkit-text-stroke:1.5px_#0f172a] opacity-30">PLANLAYIN</span>
+            </h1>
+          </motion.div>
+          <div className="absolute top-0 right-0 hidden lg:block">
+            <motion.div animate={{ rotate: 360 }} transition={{ duration: 20, repeat: Infinity, ease: "linear" }} className="w-32 h-32 border border-slate-100 rounded-full flex items-center justify-center">
+              <Sparkles className="text-orange-500 opacity-20" size={40} />
+            </motion.div>
+          </div>
+        </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">
-                    Ad Soyad <span className="text-red-500">*</span>
-                  </label>
-                  <input
-                    type="text"
-                    value={form.fullName}
-                    onChange={(e) => update("fullName", e.target.value)}
-                    placeholder="Adınız Soyadınız"
-                    className="mt-2 w-full rounded-lg border border-gray-300 px-4 py-2.5 text-gray-900 focus:outline-none focus:ring-2 focus:ring-slate-600 focus:border-slate-600"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">
-                    E-posta <span className="text-red-500">*</span>
-                  </label>
-                  <input
-                    type="email"
-                    value={form.email}
-                    onChange={(e) => update("email", e.target.value)}
-                    placeholder="ornek@domain.com"
-                    className="mt-2 w-full rounded-lg border border-gray-300 px-4 py-2.5 text-gray-900 focus:outline-none focus:ring-2 focus:ring-slate-600 focus:border-slate-600"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">
-                    Telefon <span className="text-red-500">*</span>
-                  </label>
-                  <input
-                    type="tel"
-                    value={form.phone}
-                    onChange={(e) => update("phone", e.target.value)}
-                    placeholder="05xx xxx xx xx"
-                    className="mt-2 w-full rounded-lg border border-gray-300 px-4 py-2.5 text-gray-900 focus:outline-none focus:ring-2 focus:ring-slate-600 focus:border-slate-600"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">
-                    Şehir / İlçe <span className="text-red-500">*</span>
-                  </label>
-                  <input
-                    type="text"
-                    value={form.city}
-                    onChange={(e) => update("city", e.target.value)}
-                    placeholder="Tekirdağ / Kapaklı"
-                    className="mt-2 w-full rounded-lg border border-gray-300 px-4 py-2.5 text-gray-900 focus:outline-none focus:ring-2 focus:ring-slate-600 focus:border-slate-600"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">
-                    Firma (ops.)
-                  </label>
-                  <input
-                    type="text"
-                    value={form.company}
-                    onChange={(e) => update("company", e.target.value)}
-                    placeholder="Firma adı"
-                    className="mt-2 w-full rounded-lg border border-gray-300 px-4 py-2.5 text-gray-900 focus:outline-none focus:ring-2 focus:ring-slate-600 focus:border-slate-600"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">
-                    Hizmet (ops.)
-                  </label>
-                  <select
-                    value={form.serviceId}
-                    onChange={(e) => update("serviceId", e.target.value)}
-                    className="mt-2 w-full rounded-lg border border-gray-300 px-4 py-2.5 text-gray-900 focus:outline-none focus:ring-2 focus:ring-slate-600 focus:border-slate-600"
-                  >
-                    <option value="">Seçin…</option>
-                    {services.map((s) => (
-                      <option key={s.id} value={s.id}>
-                        {s.name}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">
-                    Bütçe (ops.)
-                  </label>
-                  <select
-                    value={form.budget}
-                    onChange={(e) => update("budget", e.target.value)}
-                    className="mt-2 w-full rounded-lg border border-gray-300 px-4 py-2.5 text-gray-900 focus:outline-none focus:ring-2 focus:ring-slate-600 focus:border-slate-600"
-                  >
-                    <option value="">Seçin…</option>
-                    <option value="0-250k">0 – 250.000 TL</option>
-                    <option value="250k-1m">250.000 – 1.000.000 TL</option>
-                    <option value="1m-5m">1 – 5 M TL</option>
-                    <option value="5m+">5 M TL üzeri</option>
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">
-                    Başlangıç Tarihi (ops.)
-                  </label>
-                  <input
-                    type="date"
-                    value={form.startDate}
-                    onChange={(e) => update("startDate", e.target.value)}
-                    className="mt-2 w-full rounded-lg border border-gray-300 px-4 py-2.5 text-gray-900 focus:outline-none focus:ring-2 focus:ring-slate-600 focus:border-slate-600"
-                  />
+        <div className="grid lg:grid-cols-12 gap-16">
+
+          {/* FORM AREA */}
+          <motion.div
+            initial={{ opacity: 0, x: -50 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            className="lg:col-span-8 bg-slate-900 rounded-[3rem] p-8 md:p-16 shadow-3xl relative overflow-hidden"
+          >
+            <div className="absolute -top-24 -left-24 w-96 h-96 bg-orange-500/5 blur-[120px] rounded-full" />
+
+            <form onSubmit={onSubmit} className="relative z-10 space-y-12">
+
+              {/* Bölüm 1: Kişisel Bilgiler */}
+              <div className="space-y-8">
+                <h3 className="text-white/20 font-black uppercase tracking-widest text-xs flex items-center gap-4">
+                  <span className="w-8 h-[1px] bg-white/10" /> 01. Müşteri Bilgileri
+                </h3>
+                <div className="grid md:grid-cols-2 gap-8">
+                  <TeklifInput icon={User} label="AD SOYAD" value={form.fullName} onChange={v => setForm({ ...form, fullName: v })} />
+                  <TeklifInput icon={Mail} label="E-POSTA" type="email" value={form.email} onChange={v => setForm({ ...form, email: v })} />
+                  <TeklifInput icon={Phone} label="TELEFON" type="tel" value={form.phone} onChange={v => setForm({ ...form, phone: v })} />
+                  <TeklifInput icon={MapPin} label="ŞEHİR / İLÇE" value={form.city} onChange={v => setForm({ ...form, city: v })} />
                 </div>
               </div>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700">
-                  Proje Detayı <span className="text-red-500">*</span>
-                </label>
+              {/* Bölüm 2: Proje Detayları */}
+              <div className="space-y-8">
+                <h3 className="text-white/20 font-black uppercase tracking-widest text-xs flex items-center gap-4">
+                  <span className="w-8 h-[1px] bg-white/10" /> 02. Proje Parametreleri
+                </h3>
+                <div className="grid md:grid-cols-2 gap-8">
+                  <div className="relative group">
+                    <Briefcase className="absolute left-0 bottom-4 text-slate-500 group-focus-within:text-orange-500 transition-colors" size={20} />
+                    <select
+                      value={form.serviceId}
+                      onChange={e => setForm({ ...form, serviceId: e.target.value })}
+                      className="w-full bg-transparent border-b border-slate-700 text-white pl-8 py-4 outline-none focus:border-orange-500 transition-all appearance-none cursor-pointer"
+                    >
+                      <option value="" className="bg-slate-900">HİZMET SEÇİN</option>
+                      {services.map(s => <option key={s.id} value={s.id} className="bg-slate-900">{s.name}</option>)}
+                    </select>
+                  </div>
+                  <div className="relative group">
+                    <Calculator className="absolute left-0 bottom-4 text-slate-500 group-focus-within:text-orange-500 transition-colors" size={20} />
+                    <select
+                      value={form.budget}
+                      onChange={e => setForm({ ...form, budget: e.target.value })}
+                      className="w-full bg-transparent border-b border-slate-700 text-white pl-8 py-4 outline-none focus:border-orange-500 transition-all appearance-none cursor-pointer"
+                    >
+                      <option value="" className="bg-slate-900">TAHMİNİ BÜTÇE</option>
+                      <option value="250k-" className="bg-slate-900">0 - 250.000 TL</option>
+                      <option value="1m+" className="bg-slate-900">1.000.000 TL +</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+
+              {/* Mesaj */}
+              <div className="relative group">
                 <textarea
-                  rows={6}
+                  placeholder="PROJE DETAYLARINIZ"
                   value={form.message}
-                  onChange={(e) => update("message", e.target.value)}
-                  placeholder="Projenizi kısaca anlatın…"
-                  className="mt-2 w-full rounded-lg border border-gray-300 px-4 py-3 text-gray-900 focus:outline-none focus:ring-2 focus:ring-slate-600 focus:border-slate-600"
+                  onChange={e => setForm({ ...form, message: e.target.value })}
+                  rows={4}
+                  className="w-full bg-transparent border-b border-slate-700 text-white py-4 outline-none focus:border-orange-500 transition-all placeholder:text-slate-600 font-bold text-sm"
                 />
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
-                <div className="md:col-span-2">
-                  <label className="block text-sm font-medium text-gray-700">
-                    Güvenlik Doğrulaması
-                  </label>
-                  <div className="mt-2 flex items-center gap-3">
-                    <span className="inline-flex items-center justify-center h-11 px-8 rounded-lg border border-gray-300 bg-gray-50 text-gray-700">
-                      {a}+{b}=
-                    </span>
-                    <input
-                      type="text"
-                      inputMode="numeric"
-                      value={form.captcha}
-                      onChange={(e) => update("captcha", e.target.value)}
-                      placeholder="Cevap"
-                      className="w-full rounded-lg border border-gray-300 px-4 py-2.5 text-gray-900 focus:outline-none focus:ring-2 focus:ring-slate-600 focus:border-slate-600"
-                    />
-                  </div>
-                </div>
+              <div className="flex flex-col md:flex-row  justify-end  pt-6">
+           
 
                 <button
-                  type="submit"
                   disabled={busy}
-                  className="inline-flex items-center justify-center h-11 px-6 rounded-lg font-semibold bg-slate-600 text-white hover:bg-slate-700 active:scale-[0.99] shadow-md hover:shadow-lg transition duration-300 ease-in-out disabled:opacity-60"
+                  className="cursor-pointer group relative w-full md:w-auto px-16 py-6 bg-orange-500 rounded-full text-white font-black uppercase tracking-[0.2em] text-xs hover:bg-white hover:text-slate-900 transition-all duration-500 overflow-hidden"
                 >
-                  {busy ? "Gönderiliyor..." : "Teklif İste"}
+                  <span className="relative z-10 flex items-center gap-3">
+                    {busy ? "İŞLENİYOR..." : "TEKLİFİ OLUŞTUR"} <Send size={16} />
+                  </span>
+                  <div className="absolute inset-0 bg-white translate-y-full group-hover:translate-y-0 transition-transform duration-500" />
                 </button>
               </div>
 
-              {msg && (
-                <div
-                  className={`rounded-lg px-4 py-3 text-sm ${
-                    msg.type === "ok"
-                      ? "bg-green-50 text-green-700 border border-green-200"
-                      : "bg-red-50 text-red-700 border border-red-200"
-                  }`}
-                >
-                  {msg.text}
-                </div>
-              )}
+              <AnimatePresence>
+                {msg && (
+                  <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className={`p-6 rounded-2xl font-bold uppercase tracking-widest text-[10px] ${msg.type === "ok" ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20" : "bg-red-500/10 text-red-400 border border-red-500/20"}`}>
+                    {msg.text}
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </form>
-          </section>
+          </motion.div>
 
-          {/* Sağ Bilgi Kartı */}
-          <aside className="lg:col-span-1">
-            <div className="rounded-2xl border border-gray-100 bg-white shadow-sm p-6">
-              <h3 className="text-lg font-bold">
-                <span className="bg-gradient-to-r from-slate-600 to-slate-300 bg-clip-text text-transparent">
-                  Sizi Arayalım
-                </span>
-              </h3>
-              <p className="mt-3 text-sm text-gray-700">
-                İhtiyacınıza en uygun çözümü birlikte planlayalım. Talebinizi iletin, proje danışmanımız en kısa sürede sizi arasın.
-              </p>
-              <ul className="mt-5 space-y-3 text-sm text-gray-700">
-                <li>• Ücretsiz keşif ve danışmanlık</li>
-                <li>• Şeffaf fiyatlandırma</li>
-                <li>• Zamanında teslim garantisi</li>
+          {/* ASIDE INFO */}
+          <div className="lg:col-span-4 space-y-10">
+            <motion.div initial={{ opacity: 0, x: 30 }} whileInView={{ opacity: 1, x: 0 }} className="p-10 bg-slate-50 rounded-[3rem] border border-slate-100">
+              <h3 className="text-2xl font-black uppercase italic tracking-tighter text-slate-900 mb-6">NEDEN TEKLİF ALMALISINIZ?</h3>
+              <ul className="space-y-6">
+                {[
+                  { t: "Ücretsiz Keşif", d: "Projenizi yerinde inceleyip en doğru maliyet analizini yapıyoruz." },
+                  { t: "Şeffaf Süreç", d: "Tüm kalemleri detaylıca raporlayıp sürpriz maliyetleri eliyoruz." },
+                  { t: "Hızlı Dönüş", d: "Talebinize en geç 24 saat içerisinde uzman yanıtı veriyoruz." }
+                ].map((item, i) => (
+                  <li key={i} className="group">
+                    <div className="flex items-center gap-3 mb-2">
+                      <div className="w-2 h-2 bg-orange-500 rounded-full" />
+                      <span className="font-black uppercase tracking-widest text-[10px] text-slate-900">{item.t}</span>
+                    </div>
+                    <p className="text-sm text-slate-500 font-medium leading-relaxed">{item.d}</p>
+                  </li>
+                ))}
               </ul>
-            </div>
-          </aside>
+            </motion.div>
+
+        
+          </div>
         </div>
       </div>
     </main>
+  );
+}
+
+interface TeklifInputProps {
+  icon: React.ComponentType<{ size: number; className: string }>;
+  label: string;
+  type?: string;
+  value: string;
+  onChange: (value: string) => void;
+}
+
+function TeklifInput({ icon: Icon, label, type = "text", value, onChange }: TeklifInputProps) {
+  return (
+    <div className="relative group">
+      <Icon className="absolute left-0 bottom-4 text-slate-500 group-focus-within:text-orange-500 transition-colors" size={20} />
+      <input
+        type={type}
+        value={value}
+        onChange={(e: React.ChangeEvent<HTMLInputElement>) => onChange(e.target.value)}
+        placeholder={label}
+        className="w-full bg-transparent border-b border-slate-700 text-white pl-8 py-4 outline-none focus:border-orange-500 transition-all placeholder:text-slate-600 font-bold text-xs tracking-widest uppercase"
+      />
+    </div>
   );
 }

@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { auth, db } from "../../../firebase/config";
 import { signInWithEmailAndPassword, signOut } from "firebase/auth";
-import { collection, getDocs, query, where } from "firebase/firestore";
+import { doc, getDoc } from "firebase/firestore";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Building2, HardHat, Lock, Mail, Loader2 } from "lucide-react";
 
@@ -23,27 +23,29 @@ export default function AdminGirisClient() {
       const user = cred.user;
 
       // 1) UID ile kontrol
-      const adminByUid = await getDocs(
-        query(collection(db, "admins"), where("uid", "==", user.uid))
-      );
+      const uidDocRef = doc(db, "admins", user.uid);
+      const uidSnap = await getDoc(uidDocRef);
+      let isAdmin = uidSnap.exists();
 
-      // 2) Yoksa e-posta ile (geriye dönük)
-      if (adminByUid.empty) {
-        const adminByEmail = await getDocs(
-          query(collection(db, "admins"), where("email", "==", email))
-        );
-        if (adminByEmail.empty) {
-          await signOut(auth);
-          alert("Yetkisiz kullanıcı. Yönetici değilsiniz.");
-          return;
-        }
+      // 2) Geri uyumluluk: e‑posta ile kontrol
+      if (!isAdmin && user.email) {
+        const emailDocRef = doc(db, "admins", user.email);
+        const emailSnap = await getDoc(emailDocRef);
+        isAdmin = emailSnap.exists();
+      }
+
+      if (!isAdmin) {
+        await signOut(auth);
+        alert("Yetkisiz kullanıcı. Yönetici değilsiniz.");
+        return;
       }
 
       router.replace("/admin/panel");
     } catch (error: any) {
       console.error(error);
-      if (error.code === "auth/wrong-password" || error.code === "auth/user-not-found") {
-        alert("E-posta veya şifre yanlış.");
+
+      if (error.code === "auth/invalid-credential") {
+        alert("E‑posta veya şifre yanlış.");
       } else if (error.code === "auth/too-many-requests") {
         alert("Çok fazla deneme. Bir süre sonra tekrar deneyin.");
       } else {

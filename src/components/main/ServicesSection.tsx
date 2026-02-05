@@ -4,7 +4,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { db } from "@/firebase/config";
 import {
   collection,
@@ -24,13 +24,9 @@ type ServiceDoc = {
   createdAt?: Timestamp | null;
 };
 
-function excerpt(text: string, n = 110) {
-  const t = (text || "").trim();
-  return t.length > n ? t.slice(0, n) + "…" : t;
-}
-
 export default function ServicesSection() {
   const [services, setServices] = useState<ServiceDoc[] | null>(null);
+  const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
 
   useEffect(() => {
     (async () => {
@@ -60,150 +56,112 @@ export default function ServicesSection() {
     })();
   }, []);
 
-  // animasyon varyantları
-  const container = {
-    hidden: { opacity: 0 },
-    show: {
-      opacity: 1,
-      transition: {
-        staggerChildren: 0.2,
-      },
-    },
-  };
-
-  const item = {
-    hidden: { opacity: 0, y: 50, scale: 0.98 },
-    show: {
-      opacity: 1,
-      y: 0,
-      scale: 1,
-      transition: {
-        duration: 0.6,
-        ease: "easeOut" as const,
-      },
-    },
-  };
+  if (services === null) return <div className="h-[70vh] flex items-center justify-center">Yükleniyor...</div>;
+  if (services.length === 0) return null;
 
   return (
-    <section className="py-14 bg-white">
-      <div className="max-w-7xl mx-auto px-6">
-        {/* Başlık */}
-        <div className="text-center mb-10">
-          <h2 className="text-3xl md:text-4xl font-extrabold tracking-tight">
-            <span className="bg-gradient-to-r from-slate-600 to-slate-300 bg-clip-text text-transparent">
-              Hizmetlerimiz
-            </span>
-          </h2>
-          <p className="mt-3 text-gray-600 max-w-2xl mx-auto">
-            İhtiyacınıza özel, modern ve uzun ömürlü çözümler. Mimari
-            tasarımdan uygulamaya tüm süreçleri tek çatı altında yönetiyor,
-            konfor ve estetiği bir araya getiriyoruz.
-          </p>
-        </div>
+    <section className="relative w-full overflow-hidden bg-white py-24">
+      <div className="max-w-[1400px] mx-auto px-6 mb-16">
+        <h2 className="text-5xl font-black text-slate-900 tracking-tighter uppercase">
+          Hizmetlerimiz
+        </h2>
+         <div className="mt-4 h-2 w-24 bg-orange-500" />
+      </div>
 
-        {/* Loading */}
-        {services === null && (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {[...Array(4)].map((_, i) => (
-              <div
-                key={i}
-                className="rounded-2xl bg-white p-4 animate-pulse shadow-md"
-              >
-                <div className="h-44 w-full rounded-xl bg-gray-200" />
-                <div className="mt-4 h-4 w-2/3 bg-gray-200 rounded" />
-                <div className="mt-2 h-3 w-full bg-gray-200 rounded" />
-              </div>
-            ))}
-          </div>
-        )}
-
-        {/* Empty */}
-        {services?.length === 0 && (
-          <div className="rounded-xl border border-dashed border-gray-300 p-8 text-center text-gray-600">
-            Henüz hizmet eklenmemiş.
-          </div>
-        )}
-
-        {/* Grid */}
-        {services && services.length > 0 && (
+      {/* Container: Negatif margin verilerek 45 derecelik açının 
+          ekranın sol ve sağından dışarı taşması (whitespace) engellenir.
+      */}
+      <div className="flex w-[120%] -ml-[10%] h-[60vh] md:h-[75vh] items-stretch justify-center overflow-hidden">
+        {services.map((s, index) => (
           <motion.div
-            variants={container}
-            initial="hidden"
-            whileInView="show"
-            viewport={{ once: true, amount: 0.2 }}
-            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6"
+            key={s.id}
+            onMouseEnter={() => setHoveredIndex(index)}
+            onMouseLeave={() => setHoveredIndex(null)}
+            animate={{
+              // Hover olduğunda açı düzelir (0deg), normalde 45deg (skewX -45)
+              skewX: hoveredIndex === index ? 0 : -45,
+              width: hoveredIndex === index ? "40%" : "15%",
+              zIndex: hoveredIndex === index ? 10 : 1,
+            }}
+            transition={{
+              duration: 0.7,
+              ease: [0.23, 1, 0.32, 1] // Custom cubic-bezier for smooth motion
+            }}
+            className="relative h-full overflow-hidden border-l-4 border-white cursor-pointer group shadow-[0_0_30px_rgba(0,0,0,0.1)]"
           >
-            {services.map((s) => (
-              <motion.div key={s.id} variants={item}>
-                <Link
-                  href={{ pathname: "/hizmet-detay", query: { id: s.id } }}
-                  className="
-                    group block focus:outline-none
-                    rounded-2xl bg-white shadow-lg border border-gray-100
-                    transition-all duration-300
-                    hover:-translate-y-1 hover:shadow-xl
-                  "
+            {/* Inner Content: Dıştaki Skew etkisini sıfırlamak için 
+                içeride ters yöne skew uyguluyoruz. 
+                Açılıyken 45deg, hover iken 0deg.
+            */}
+            <motion.div
+              className="relative w-full h-full"
+              animate={{
+                skewX: hoveredIndex === index ? 0 : 45,
+                scale: hoveredIndex === index ? 1.1 : 1.6,
+              }}
+              transition={{ 
+                duration: 0.8, // Uzaklaşma hissi için süreyi biraz artırdık
+                ease: [0.23, 1, 0.32, 1] 
+              }}
+            >
+              <Image
+                src={s.imageUrl || "/placeholder.jpg"}
+                alt={s.name}
+                fill
+                className="object-cover"
+                sizes="50vw"
+                priority
+              />
+
+              {/* Overlay: Hover değilken daha koyu, hover iken açılır */}
+              <div className={`absolute inset-0 transition-opacity duration-500 ${hoveredIndex === index ? 'bg-black/40' : 'bg-black/60'}`} />
+
+              {/* Yazı İçeriği */}
+              <div className="absolute inset-0 flex flex-col items-center justify-center p-8 text-white overflow-hidden">
+                <motion.div
+                  animate={{
+                    rotate: hoveredIndex === index ? 0 : 0,
+                    y: hoveredIndex === index ? 0 : 20
+                  }}
+                  className="flex flex-col items-center"
                 >
-                  <div className="relative h-48 w-full overflow-hidden rounded-t-2xl">
-                    <Image
-                      src={s.imageUrl || "/placeholder.jpg"}
-                      alt={s.name}
-                      fill
-                      className="object-cover transition-transform duration-300 group-hover:scale-[1.02]"
-                      sizes="(max-width: 1024px) 100vw, 25vw"
-                    />
-                  </div>
+                  <h3 className={`font-black uppercase tracking-tighter transition-all duration-500 ${hoveredIndex === index ? 'text-4xl md:text-6xl mb-6' : 'text-xl md:text-2xl opacity-70'}`}>
+                    {s.name}
+                  </h3>
 
-                  <div className="p-4">
-                    <h3 className="text-gray-900 font-semibold text-lg">
-                      {s.name}
-                    </h3>
-                    <p className="mt-1 text-sm text-gray-600">
-                      {excerpt(s.description)}
-                    </p>
-                  </div>
-
-                  <div className="px-4 pb-4">
-                    <span
-                      className="
-                        inline-flex items-center text-sm font-medium text-slate-600
-                        opacity-0 translate-y-1 group-hover:opacity-100 group-hover:translate-y-0
-                        transition-all duration-300
-                      "
-                    >
-                      Detaya Git
-                      <svg
-                        className="ml-1 w-4 h-4 transition-transform duration-300 group-hover:translate-x-0.5"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="2"
+                  <AnimatePresence>
+                    {hoveredIndex === index && (
+                      <motion.div
+                        initial={{ opacity: 0, scale: 0.8 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        exit={{ opacity: 0 }}
+                        className="text-center mt-10"
                       >
-                        <path d="M5 12h14" />
-                        <path d="M12 5l7 7-7 7" />
-                      </svg>
-                    </span>
-                  </div>
-                </Link>
-              </motion.div>
-            ))}
+                  
+                        <Link
+                          href={{ pathname: "/hizmet-detay", query: { id: s.id } }}
+                          className="px-10 py-4 bg-white text-black font-bold uppercase tracking-widest text-sm hover:bg-slate-200 transition-colors inline-block"
+                        >
+                          Detaya Git
+                        </Link>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </motion.div>
+              </div>
+            </motion.div>
           </motion.div>
-        )}
+        ))}
+      </div>
 
-        {/* Alt buton */}
-        <div className="mt-10 text-center">
-          <Link
-            href="/tum-hizmetler"
-            className="
-              inline-flex items-center gap-2 px-5 py-2.5 rounded-lg font-semibold
-              bg-slate-600 text-white hover:bg-slate-700 active:scale-[0.98]
-              transition transform hover:scale-105
-              shadow-md hover:shadow-lg
-            "
-          >
-            Tüm Hizmetler
-          </Link>
-        </div>
+      <div className="mt-20 text-center">
+        <Link
+          href="/tum-hizmetler"
+          className="text-black group relative inline-flex items-center gap-3 text-lg font-bold uppercase tracking-tighter"
+        >
+          <span>Tüm Hizmetleri Keşfet</span>
+          <div className="w-12 h-[2px] bg-slate-900 group-hover:w-20 transition-all duration-300"></div>
+        </Link>
       </div>
     </section>
   );

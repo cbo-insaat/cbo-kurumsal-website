@@ -1,392 +1,225 @@
-// File: app/proje-detay/ProjeDetay.tsx
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { motion, AnimatePresence } from "framer-motion";
 import { db } from "@/firebase/config";
-import {
-    doc,
-    getDoc,
-    collection,
-    getDocs,
-    query,
-    where,
-    orderBy,
-    Timestamp,
-    limit,
-} from "firebase/firestore";
+import { doc, getDoc, collection, getDocs, query, where, limit } from "firebase/firestore";
+import { MapPin, Calendar, ArrowRight, Layers, LucideIcon } from "lucide-react";
 
-type Project = {
+// 1. Proje Veri Tipini Tanımlayalım
+interface ProjectData {
     id: string;
-    name: string;
+    name?: string;
     description?: string;
+    location?: string;
     status?: "ongoing" | "completed";
     serviceId?: string;
-    serviceSlug?: string;
-    images?: string[];
     coverUrl?: string;
-    location?: string;
-    startedAt?: Timestamp | null;
-    finishedAt?: Timestamp | null;
-    createdAt?: Timestamp | null;
-};
+    images?: string[];
+    startedAt?: any;
+}
 
-type Service = {
-    id: string;
-    name: string;
-    slug?: string;
-};
-
-type Props = { projectId: string };
-
-export default function ProjeDetay({ projectId }: Props) {
-    const [project, setProject] = useState<Project | null>(null);
-    const [service, setService] = useState<Service | null>(null);
-    const [related, setRelated] = useState<Project[] | null>(null);
-    const [error, setError] = useState<string | null>(null);
-
-    // Basit görsel galerisi
-    const images = useMemo(() => {
-        if (!project) return [];
-        if (project.images && project.images.length > 0) return project.images;
-        if (project.coverUrl) return [project.coverUrl];
-        return ["/placeholder.jpg"];
-    }, [project]);
-
-    const [active, setActive] = useState(0);
-    const prev = () => setActive((i) => (i - 1 + images.length) % images.length);
-    const next = () => setActive((i) => (i + 1) % images.length);
+export default function ProjeDetay({ projectId }: { projectId: string }) {
+    // 2. State'leri tiplendirelim
+    const [project, setProject] = useState<ProjectData | null>(null);
+    const [service, setService] = useState<any | null>(null);
+    const [related, setRelated] = useState<ProjectData[] | null>(null);
+    const [activeImg, setActiveImg] = useState(0);
 
     useEffect(() => {
-        let cancelled = false;
-
-        async function run() {
-            setError(null);
-            setProject(null);
-            setService(null);
-            setRelated(null);
-
-            try {
-                if (!projectId) {
-                    setError("Geçersiz proje.");
-                    return;
-                }
-
-                // 1) Proje
-                const pref = doc(db, "projects", projectId);
-                const psnap = await getDoc(pref);
-                if (!psnap.exists()) {
-                    setError("Proje bulunamadı.");
-                    return;
-                }
-                const pdata = psnap.data() as any;
-                const p: Project = {
-                    id: psnap.id,
-                    name: pdata.name,
-                    description: pdata.description,
-                    status: pdata.status,
-                    serviceId: pdata.serviceId,
-                    serviceSlug: pdata.serviceSlug,
-                    images: pdata.images || [],
-                    coverUrl: pdata.coverUrl,
-                    location: pdata.location,
-                    startedAt: pdata.startedAt ?? null,
-                    finishedAt: pdata.finishedAt ?? null,
-                    createdAt: pdata.createdAt ?? null,
-                };
-                if (cancelled) return;
+        async function fetchData() {
+            const pref = doc(db, "projects", projectId);
+            const psnap = await getDoc(pref);
+            
+            if (psnap.exists()) {
+                // 3. 'as ProjectData' diyerek hatayı çözüyoruz
+                const p = { id: psnap.id, ...psnap.data() } as ProjectData;
                 setProject(p);
-                setActive(0);
 
-                // 2) İlgili hizmet (varsa)
                 if (p.serviceId) {
                     const sref = doc(db, "services", p.serviceId);
                     const ssnap = await getDoc(sref);
-                    if (ssnap.exists()) {
-                        const sdata = ssnap.data() as any;
-                        if (!cancelled) {
-                            setService({
-                                id: ssnap.id,
-                                name: sdata.name,
-                                slug: sdata.slug,
-                            });
-                        }
-                    }
-                }
+                    if (ssnap.exists()) setService({ id: ssnap.id, ...ssnap.data() });
 
-                // 3) İlgili projeler (aynı hizmetten 6 tane)
-                if (p.serviceId) {
                     const rq = query(
-                        collection(db, "projects"),
-                        where("serviceId", "==", p.serviceId),
-                        orderBy("createdAt", "desc"),
-                        limit(6)
+                        collection(db, "projects"), 
+                        where("serviceId", "==", p.serviceId), 
+                        limit(4)
                     );
                     const rs = await getDocs(rq);
-                    const rlist: Project[] = rs.docs
-                        .filter((d) => d.id !== projectId)
-                        .map((d) => {
-                            const x = d.data() as any;
-                            return {
-                                id: d.id,
-                                name: x.name,
-                                description: x.description,
-                                status: x.status,
-                                serviceId: x.serviceId,
-                                serviceSlug: x.serviceSlug,
-                                images: x.images || [],
-                                coverUrl: x.coverUrl,
-                                location: x.location,
-                                createdAt: x.createdAt ?? null,
-                            };
-                        });
-                    if (!cancelled) setRelated(rlist);
+                    setRelated(rs.docs
+                        .filter(d => d.id !== projectId)
+                        .map(d => ({ id: d.id, ...d.data() } as ProjectData))
+                    );
                 }
-            } catch (e) {
-                console.error(e);
-                if (!cancelled) setError("Veriler alınırken bir hata oluştu.");
             }
         }
-
-        run();
-        return () => {
-            cancelled = true;
-        };
+        fetchData();
     }, [projectId]);
 
+    const images = useMemo(() => {
+        if (!project) return [];
+        return project.images && project.images.length > 0 
+            ? project.images 
+            : [project.coverUrl || "/placeholder.jpg"];
+    }, [project]);
+
+    if (!project) return <div className="h-screen flex items-center justify-center animate-pulse font-black uppercase tracking-widest text-slate-300">Proje Detayları Yükleniyor...</div>;
+
     return (
-        <main className="min-h-screen bg-white mt-20">
-            <div className="max-w-7xl mx-auto px-6 py-10">
-                {/* Üst bar */}
-                <div className="mb-6 flex flex-wrap items-center gap-3">
-                    {project?.status && (
-                        <span
-                            className={`text-xs px-2 py-1 rounded-full border ${
-                                project.status === "ongoing"
-                                    ? "bg-amber-50 text-amber-700 border-amber-200"
-                                    : "bg-emerald-50 text-emerald-700 border-emerald-200"
-                            }`}
+        <main className="min-h-screen bg-white pb-20">
+            {/* HERO SECTION */}
+            <section className="relative h-[80vh] w-full overflow-hidden bg-slate-900">
+                <AnimatePresence mode="wait">
+                    <motion.div
+                        key={activeImg}
+                        initial={{ opacity: 0, scale: 1.1 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        exit={{ opacity: 0 }}
+                        transition={{ duration: 1 }}
+                        className="absolute inset-0"
+                    >
+                        <Image
+                            src={images[activeImg]}
+                            alt={project.name || "Proje"}
+                            fill
+                            className="object-cover opacity-80"
+                            priority
+                        />
+                    </motion.div>
+                </AnimatePresence>
+
+                <div className="absolute inset-0 bg-gradient-to-t from-white via-transparent to-transparent" />
+
+                <div className="absolute bottom-20 left-0 w-full">
+                    <div className="max-w-[1400px] mx-auto px-6">
+                        <motion.div
+                            initial={{ opacity: 0, y: 30 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            className="max-w-4xl"
                         >
-                            {project.status === "ongoing" ? "Devam Eden" : "Bitmiş"}
-                        </span>
-                    )}
-                    {service && (
-                        <Link
-                            href={{ pathname: "/hizmet-detay", query: { id: service.id } }}
-                            className="text-xs px-2 py-1 rounded-full border border-slate-200 bg-slate-50 text-slate-700 hover:bg-slate-100 transition"
-                        >
-                            Hizmet: {service.name}
-                        </Link>
-                    )}
+                            <span className="text-orange-500 font-black uppercase tracking-[0.4em] text-xs mb-4 block">
+                                {service?.name || "Özel Proje"}
+                            </span>
+                            <h1 className="text-[10vw] lg:text-[100px] font-black leading-[0.85] tracking-tighter uppercase italic text-slate-900">
+                                {project.name}
+                            </h1>
+                        </motion.div>
+                    </div>
                 </div>
 
-                {/* Hata / Yükleniyor */}
-                {error && (
-                    <div className="rounded-xl border border-red-200 bg-red-50 p-4 text-red-700">
-                        {error}
-                    </div>
-                )}
-                {!project && !error && (
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-center">
-                        <div className="relative h-72 rounded-2xl bg-gray-100 animate-pulse" />
-                        <div className="animate-pulse">
-                            <div className="h-8 w-64 bg-gray-200 rounded" />
-                            <div className="mt-3 h-4 w-96 bg-gray-200 rounded" />
-                            <div className="mt-2 h-4 w-80 bg-gray-200 rounded" />
-                            <div className="mt-2 h-4 w-72 bg-gray-200 rounded" />
+                <div className="absolute bottom-10 right-10 flex gap-2">
+                    {images.map((img, i) => (
+                        <button
+                            key={i}
+                            onClick={() => setActiveImg(i)}
+                            className={`w-12 h-12 rounded-full border-2 transition-all overflow-hidden ${activeImg === i ? "border-orange-500 scale-110" : "border-white/20 opacity-50"}`}
+                        >
+                            <Image src={img} alt="thumb" width={50} height={50} className="object-cover h-full w-full" />
+                        </button>
+                    ))}
+                </div>
+            </section>
+
+            <section className="max-w-[1400px] mx-auto px-6 py-20">
+                <div className="grid lg:grid-cols-12 gap-16">
+                    <div className="lg:col-span-4 space-y-12">
+                        <div className="lg:sticky lg:top-32 space-y-10">
+                            <div>
+                                <h3 className="text-slate-400 font-bold uppercase tracking-widest text-[10px] mb-6 flex items-center gap-4">
+                                    <div className="h-[1px] w-8 bg-orange-500" /> Proje Künyesi
+                                </h3>
+                                <div className="space-y-6">
+                                    <DetailItem icon={MapPin} label="Konum" value={project.location || "Belirtilmemiş"} />
+                                    <DetailItem icon={Layers} label="Durum" value={project.status === "ongoing" ? "Devam Ediyor" : "Tamamlandı"} color={project.status === "ongoing" ? "text-orange-500" : "text-emerald-500"} />
+                                    {project.startedAt && <DetailItem icon={Calendar} label="Başlangıç" value={project.startedAt.toDate().toLocaleDateString('tr-TR')} />}
+                                </div>
+                            </div>
+
+                            <div className="p-8 bg-slate-50 rounded-[2.5rem] border border-slate-100">
+                                <p className="text-slate-600 font-medium leading-relaxed italic">
+                                    "{project.description || "Bu proje CBO Yapı'nın üstün mühendislik ve estetik anlayışıyla inşa edilmiştir."}"
+                                </p>
+                            </div>
+
+                            <Link
+                                href="/iletisim"
+                                className="inline-flex items-center gap-4 px-10 py-5 bg-slate-900 text-white rounded-full font-black uppercase tracking-widest text-[10px] hover:bg-orange-500 transition-all group"
+                            >
+                                Benzer Proje Talebi <ArrowRight size={14} className="group-hover:translate-x-2 transition-transform" />
+                            </Link>
                         </div>
                     </div>
-                )}
 
-                {/* İçerik */}
-                {project && (
-                    <>
-                        {/* Başlık + Galeri + Bilgiler */}
-                        <section className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                            {/* Sol: Galeri */}
-                            <div className="relative">
-                                <div className="relative h-[420px] w-full overflow-hidden rounded-2xl border border-gray-100 shadow">
-                                    <Image
-                                        key={images[active]}
-                                        src={images[active]}
-                                        alt={project.name || "Proje görseli"}
-                                        fill
-                                        className="object-cover"
-                                        sizes="(max-width: 1024px) 100vw, 600px"
-                                    />
-                                    {/* Oklar */}
-                                    {images.length > 1 && (
-                                        <>
-                                            <button
-                                                onClick={prev}
-                                                className="absolute left-3 top-1/2 -translate-y-1/2 rounded-full bg-white/90 hover:bg-white shadow p-2 transition"
-                                                aria-label="Önceki"
-                                            >
-                                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-                                                    <path d="M15 19l-7-7 7-7" stroke="currentColor" strokeWidth="2" />
-                                                </svg>
-                                            </button>
-                                            <button
-                                                onClick={next}
-                                                className="absolute right-3 top-1/2 -translate-y-1/2 rounded-full bg-white/90 hover:bg-white shadow p-2 transition"
-                                                aria-label="Sonraki"
-                                            >
-                                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-                                                    <path d="M9 5l7 7-7 7" stroke="currentColor" strokeWidth="2" />
-                                                </svg>
-                                            </button>
-                                        </>
-                                    )}
-                                </div>
+                    <div className="lg:col-span-8 space-y-20">
+                        <div className="prose prose-slate max-w-none">
+                            <h2 className="text-4xl font-black uppercase italic tracking-tighter text-slate-900 mb-8">Mimari Yaklaşım</h2>
+                            <p className="text-xl text-slate-500 font-medium leading-loose">
+                                Proje kapsamında modern çizgiler ve dayanıklı mühendislik çözümleri bir araya getirilmiştir.
+                                Mekansal bütünlük ve kullanıcı deneyimi odağa alınarak tasarlanan bu yapı, CBO Yapı'nın kalite standartlarını yansıtmaktadır.
+                            </p>
+                        </div>
 
-                                {/* Küçük önizlemeler */}
-                                {images.length > 1 && (
-                                    <div className="mt-3 grid grid-cols-5 gap-2">
-                                        {images.map((src, i) => (
-                                            <button
-                                                key={i}
-                                                onClick={() => setActive(i)}
-                                                className={`relative h-16 rounded-lg overflow-hidden ring-2 transition ${
-                                                    i === active
-                                                        ? "ring-slate-600"
-                                                        : "ring-gray-200 hover:ring-slate-300"
-                                                }`}
-                                                aria-label={`Görsel ${i + 1}`}
-                                            >
-                                                <Image
-                                                    src={src}
-                                                    alt={`thumb-${i}`}
-                                                    fill
-                                                    className="object-cover"
-                                                    sizes="160px"
-                                                />
-                                            </button>
-                                        ))}
+                        <div className="grid grid-cols-2 gap-8">
+                            {images.slice(0, 4).map((img, i) => (
+                                <motion.div
+                                    key={i}
+                                    whileInView={{ opacity: 1, y: 0 }}
+                                    initial={{ opacity: 0, y: 40 }}
+                                    viewport={{ once: true }}
+                                    className={`relative overflow-hidden rounded-[2.5rem] shadow-xl ${i % 3 === 0 ? "col-span-2 h-[500px]" : "col-span-1 h-[350px]"}`}
+                                >
+                                    <Image src={img} alt="Detail" fill className="object-cover hover:scale-110 transition-transform duration-1000" />
+                                </motion.div>
+                            ))}
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            {related && related.length > 0 && (
+                <section className="bg-slate-50 py-24 mt-20">
+                    <div className="max-w-[1400px] mx-auto px-6">
+                        <h2 className="text-[6vw] font-black uppercase italic tracking-tighter text-slate-200 mb-12">İlgili İşler</h2>
+                        <div className="grid md:grid-cols-3 gap-8">
+                            {related.map((p) => (
+                                <Link key={p.id} href={{ pathname: "/proje-detay", query: { id: p.id } }} className="group">
+                                    <div className="relative h-72 overflow-hidden rounded-[2rem] mb-4">
+                                        <Image src={p.coverUrl || p.images?.[0] || "/placeholder.jpg"} alt={p.name || "İlgili Proje"} fill className="object-cover group-hover:scale-110 transition-all duration-700" />
+                                        <div className="absolute inset-0 bg-black/20 group-hover:bg-black/0 transition-colors" />
                                     </div>
-                                )}
-                            </div>
-
-                            {/* Sağ: Başlık ve detaylar */}
-                            <div>
-                                <h1 className="text-3xl md:text-4xl font-extrabold leading-tight">
-                                    <span className="bg-gradient-to-r from-slate-600 to-slate-300 bg-clip-text text-transparent">
-                                        {project.name}
-                                    </span>
-                                </h1>
-
-                                {/* Meta */}
-                                <div className="mt-4 flex flex-wrap items-center gap-2 text-sm">
-                                    {project.location && (
-                                        <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-gray-200 bg-white text-gray-700">
-                                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
-                                                <path d="M12 22s7-5.33 7-12A7 7 0 105 10c0 6.67 7 12 7 12z" stroke="currentColor" strokeWidth="2" />
-                                                <circle cx="12" cy="10" r="3" stroke="currentColor" strokeWidth="2" />
-                                            </svg>
-                                            {project.location}
-                                        </span>
-                                    )}
-                                    {project.startedAt?.toDate && (
-                                        <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-gray-200 bg-white text-gray-700">
-                                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
-                                                <path d="M8 7V3M16 7V3M3 11h18M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" stroke="currentColor" strokeWidth="2" />
-                                            </svg>
-                                            Başlangıç: {project.startedAt.toDate().toLocaleDateString("tr-TR")}
-                                        </span>
-                                    )}
-                                    {project.finishedAt?.toDate && (
-                                        <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-gray-200 bg-white text-gray-700">
-                                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
-                                                <path d="M8 7V3M16 7V3M3 11h18M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" stroke="currentColor" strokeWidth="2" />
-                                            </svg>
-                                            Bitiş: {project.finishedAt.toDate().toLocaleDateString("tr-TR")}
-                                        </span>
-                                    )}
-                                </div>
-
-                                {/* Açıklama */}
-                                {project.description && (
-                                    <div className="mt-5 text-gray-700 leading-relaxed space-y-3">
-                                        {project.description.split("\n").map((p, i) => (
-                                            <p key={i} className="text-[15px] md:text-base">
-                                                {p.trim()}
-                                            </p>
-                                        ))}
-                                    </div>
-                                )}
-
-                                {/* Aksiyonlar */}
-                                <div className="mt-6 flex flex-wrap gap-3">
-                                    {service && (
-                                        <Link
-                                            href={{ pathname: "/hizmet-detay", query: { id: service.id } }}
-                                            className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-slate-600 text-white font-medium hover:bg-slate-700 transition transform hover:scale-105"
-                                        >
-                                            {service.name} hizmetine dön
-                                        </Link>
-                                    )}
-                                    <Link
-                                        href="/tum-projeler"
-                                        className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-slate-200 text-slate-700 hover:bg-slate-50 transition"
-                                    >
-                                        Tüm projeler
-                                    </Link>
-                                </div>
-                            </div>
-                        </section>
-
-                        {/* İlgili projeler */}
-                        {related && related.length > 0 && (
-                            <section className="mt-12">
-                                <h2 className="text-xl font-semibold text-gray-900 mb-4">
-                                    İlgili Projeler
-                                </h2>
-                                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                                    {related.map((p) => {
-                                        const cover = (p.images && p.images[0]) || p.coverUrl || "/placeholder.jpg";
-                                        return (
-                                            <Link
-                                                key={p.id}
-                                                href={{ pathname: "/proje-detay", query: { id: p.id } }}
-                                                className="group block focus:outline-none rounded-2xl bg-white shadow-lg border border-gray-100 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl"
-                                            >
-                                                <div className="relative h-48 w-full overflow-hidden rounded-t-2xl">
-                                                    <Image
-                                                        src={cover}
-                                                        alt={p.name}
-                                                        fill
-                                                        className="object-cover transition-transform duration-300 group-hover:scale-[1.02]"
-                                                        sizes="(max-width: 1024px) 100vw, 33vw"
-                                                    />
-                                                </div>
-                                                <div className="p-4">
-                                                    <div className="flex items-center justify-between">
-                                                        <h3 className="font-semibold text-gray-900">{p.name}</h3>
-                                                        {p.status && (
-                                                            <span
-                                                                className={`text-xs px-2 py-1 rounded-full border ${
-                                                                    p.status === "ongoing"
-                                                                        ? "bg-amber-50 text-amber-700 border-amber-200"
-                                                                        : "bg-emerald-50 text-emerald-700 border-emerald-200"
-                                                                }`}
-                                                            >
-                                                                {p.status === "ongoing" ? "Devam Eden" : "Bitmiş"}
-                                                            </span>
-                                                        )}
-                                                    </div>
-                                                    {p.location && (
-                                                        <p className="mt-1 text-xs text-gray-500">{p.location}</p>
-                                                    )}
-                                                </div>
-                                            </Link>
-                                        );
-                                    })}
-                                </div>
-                            </section>
-                        )}
-                    </>
-                )}
-            </div>
+                                    <h4 className="text-slate-900 font-black uppercase italic tracking-tight">{p.name}</h4>
+                                    <span className="text-slate-400 font-bold uppercase tracking-widest text-[10px]">{p.location}</span>
+                                </Link>
+                            ))}
+                        </div>
+                    </div>
+                </section>
+            )}
         </main>
+    );
+}
+
+// 4. DetailItem için Tip Güvenliği
+interface DetailItemProps {
+    icon: LucideIcon;
+    label: string;
+    value: string;
+    color?: string;
+}
+
+function DetailItem({ icon: Icon, label, value, color = "text-slate-900" }: DetailItemProps) {
+    return (
+        <div className="flex items-center gap-6 group">
+            <div className="w-12 h-12 bg-white rounded-2xl flex items-center justify-center shadow-sm border border-slate-100 group-hover:bg-slate-900 group-hover:text-white transition-all">
+                <Icon size={20} strokeWidth={1.5} />
+            </div>
+            <div>
+                <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">{label}</p>
+                <p className={`font-black uppercase italic tracking-tight ${color}`}>{value}</p>
+            </div>
+        </div>
     );
 }

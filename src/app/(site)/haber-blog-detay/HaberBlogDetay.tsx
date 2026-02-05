@@ -1,406 +1,224 @@
-// File: app/haber-blog-detay/HaberBlogDetay.tsx
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { motion, AnimatePresence, useScroll, useSpring } from "framer-motion";
 import { db } from "@/firebase/config";
-import {
-  collection,
-  doc,
-  getDoc,
-  getDocs,
-  limit,
-  orderBy,
-  query,
-  Timestamp,
-  where,
-} from "firebase/firestore";
+import { collection, doc, getDoc, getDocs, limit, query, where } from "firebase/firestore";
+import { Clock, ChevronLeft, ChevronRight, Share2, ArrowRight } from "lucide-react";
 
-type PostDoc = {
+interface PostData {
   id: string;
-  title: string;
-  excerpt?: string;
-  content?: string;
-  status: "draft" | "published";
+  title?: string;
   category?: string;
-  tags?: string[];
+  content?: string;
+  excerpt?: string;
   coverUrl?: string;
   images?: string[];
-  createdAt?: Timestamp | null;
-};
+  tags?: string[];
+  status?: string;
+  createdAt?: any;
+}
 
-type Props = { postId: string };
+export default function HaberBlogDetay({ postId }: { postId: string }) {
+  const [post, setPost] = useState<any | null>(null);
+  const [more, setMore] = useState<any[] | null>(null);
+  const [activeIdx, setActiveIdx] = useState(0);
 
-export default function HaberBlogDetay({ postId }: Props) {
-  const [post, setPost] = useState<PostDoc | null>(null);
-  const [more, setMore] = useState<PostDoc[] | null>(null);
-  const [error, setError] = useState<string | null>(null);
-
-  // Okuma süresi (kelime / 220 ≈ dakika)
-  const readMins = useMemo(() => {
-    if (!post?.content) return 1;
-    const words = post.content.trim().split(/\s+/).length;
-    return Math.max(1, Math.round(words / 220));
-  }, [post]);
-
-  // Galeri (kapak + ek görseller)
-  const gallery = useMemo(() => {
-    if (!post) return [];
-    if (post.images && post.images.length > 0) return post.images;
-    if (post.coverUrl) return [post.coverUrl];
-    return ["/placeholder.jpg"];
-  }, [post]);
-
-  const [active, setActive] = useState(0);
-  const prev = () => setActive((i) => (i - 1 + gallery.length) % gallery.length);
-  const next = () => setActive((i) => (i + 1) % gallery.length);
+  // Okuma İlerleme Çubuğu
+  const { scrollYProgress } = useScroll();
+  const scaleX = useSpring(scrollYProgress, { stiffness: 100, damping: 30, restDelta: 0.001 });
 
   useEffect(() => {
-    let cancelled = false;
+    async function fetchData() {
+      const pref = doc(db, "posts", postId);
+      const psnap = await getDoc(pref);
 
-    async function run() {
-      setError(null);
-      setPost(null);
-      setMore(null);
-      setActive(0);
-
-      try {
-        if (!postId) {
-          setError("Geçersiz yazı.");
-          return;
-        }
-
-        // 1) Yazı
-        const pref = doc(db, "posts", postId);
-        const psnap = await getDoc(pref);
-        if (!psnap.exists()) {
-          setError("İçerik bulunamadı.");
-          return;
-        }
-        const x = psnap.data() as any;
-        const p: PostDoc = {
-          id: psnap.id,
-          title: x.title,
-          excerpt: x.excerpt,
-          content: x.content,
-          status: x.status,
-          category: x.category,
-          tags: x.tags || [],
-          coverUrl: x.coverUrl,
-          images: x.images || [],
-          createdAt: x.createdAt ?? null,
-        };
-        if (cancelled) return;
+      if (psnap.exists()) {
+        // 3. 'as PostData' diyerek TypeScript'e güven veriyoruz
+        const p = { id: psnap.id, ...psnap.data() } as PostData;
         setPost(p);
 
-        // 2) Aynı kategoriden diğer yazılar (6 adet)
         const q1 = query(
           collection(db, "posts"),
           where("status", "==", "published"),
-          ...(p.category ? [where("category", "==", p.category)] : []),
-          orderBy("createdAt", "desc"),
-          limit(6)
+          // Artık p.category hata vermez
+          where("category", "==", p.category || "Genel"),
+          limit(4)
         );
         const r1 = await getDocs(q1);
-        const others: PostDoc[] = r1.docs
-          .filter((d) => d.id !== p.id)
-          .map((d) => {
-            const y = d.data() as any;
-            return {
-              id: d.id,
-              title: y.title,
-              excerpt: y.excerpt,
-              content: y.content,
-              status: y.status,
-              category: y.category,
-              tags: y.tags || [],
-              coverUrl: y.coverUrl,
-              images: y.images || [],
-              createdAt: y.createdAt ?? null,
-            };
-          });
-
-        if (!cancelled) setMore(others);
-      } catch (e) {
-        console.error(e);
-        if (!cancelled) setError("Veriler yüklenirken bir hata oluştu.");
+        setMore(r1.docs
+          .filter(d => d.id !== postId)
+          .map(d => ({ id: d.id, ...d.data() } as PostData))
+        );
       }
     }
-
-    run();
-    return () => {
-      cancelled = true;
-    };
+    fetchData();
   }, [postId]);
 
+  const gallery = useMemo(() => {
+    if (!post) return [];
+    return post.images?.length > 0 ? post.images : [post.coverUrl || "/placeholder.jpg"];
+  }, [post]);
+
+  if (!post) return <div className="h-screen flex items-center justify-center animate-pulse font-black text-slate-200">İÇERİK YÜKLENİYOR...</div>;
+
   return (
-    <main className="min-h-screen bg-white mt-20">
-      <div className="max-w-7xl mx-auto px-6 py-10">
-        {/* Üst bar */}
-        <div className="mb-6 flex flex-wrap items-center gap-3">
-          {post?.category && (
-            <span className="text-xs px-3 py-1.5 rounded-full border border-slate-200 bg-slate-50 text-slate-700 font-medium">
-              {post.category}
-            </span>
-          )}
+    <main className="min-h-screen bg-white pb-32">
+      {/* Scroll Progress Bar */}
+      <motion.div className="fixed top-0 left-0 right-0 h-1 bg-orange-500 z-[100] origin-left" style={{ scaleX }} />
 
-          {post?.createdAt?.toDate && (
-            <span className="text-xs px-3 py-1.5 rounded-full border border-slate-200 bg-white text-slate-600">
-              {post.createdAt.toDate().toLocaleDateString("tr-TR", {
-                day: "2-digit",
-                month: "short",
-                year: "numeric",
-              })}
-            </span>
-          )}
+      {/* HERO SECTION - Büyük Tipografi ve Kapak */}
+      <header className="relative pt-32 pb-20 overflow-hidden bg-slate-50">
+        <div className="max-w-[1400px] mx-auto px-6">
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="max-w-5xl"
+          >
+            <div className="flex items-center gap-4 mb-8">
+              <span className="bg-orange-500 text-white px-4 py-1 rounded-full text-[10px] font-black uppercase tracking-[0.2em]">
+                {post.category || "Mimari Güncel"}
+              </span>
+              <span className="text-slate-400 font-bold uppercase text-[10px] tracking-widest flex items-center gap-2">
+                <Clock size={12} /> {Math.ceil((post.content?.length || 0) / 1000)} DK OKUMA
+              </span>
+            </div>
 
-          {post && (
-            <span className="text-xs px-3 py-1.5 rounded-full border border-slate-200 bg-white text-slate-600 flex items-center gap-1">
-              <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <circle cx="12" cy="12" r="10" />
-                <path d="M12 6v6l4 2" />
-              </svg>
-              ~{readMins} dk
-            </span>
-          )}
+            <h1 className="text-[8vw] md:text-[80px] font-black leading-[0.9] tracking-tighter uppercase italic text-slate-900 mb-12">
+              {post.title}
+            </h1>
+
+            <div className="flex items-center gap-8 border-t border-slate-200 pt-8">
+              <div className="flex flex-col">
+                <span className="text-slate-400 text-[10px] font-black uppercase tracking-widest">Yayınlanma</span>
+                <span className="text-slate-900 font-bold text-sm">{post.createdAt?.toDate().toLocaleDateString('tr-TR')}</span>
+              </div>
+              <div className="h-10 w-[1px] bg-slate-200" />
+              <div className="flex gap-2">
+                {post.tags?.slice(0, 3).map((t: string, i: number) => (
+                  <span key={i} className="text-[10px] font-black text-slate-400 uppercase tracking-widest">#{t}</span>
+                ))}
+              </div>
+            </div>
+          </motion.div>
         </div>
 
-        {/* Hata / Loading */}
-        {error && (
-          <div className="rounded-xl border border-red-200 bg-red-50 p-6 text-red-700 text-center">
-            {error}
-          </div>
-        )}
-        {!post && !error && (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
-            <div className="relative h-80 rounded-2xl bg-gray-100 animate-pulse" />
-            <div className="space-y-4 animate-pulse">
-              <div className="h-10 w-4/5 bg-gray-200 rounded" />
-              <div className="h-5 w-full bg-gray-200 rounded" />
-              <div className="h-5 w-11/12 bg-gray-200 rounded" />
-              <div className="h-5 w-10/12 bg-gray-200 rounded" />
+        {/* Arka Plan Büyük Yazı */}
+        <div className="absolute -right-20 top-40 opacity-[0.03] select-none pointer-events-none">
+          <span className="text-[25vw] font-black italic uppercase leading-none text-slate-900">ARTICLE</span>
+        </div>
+      </header>
+
+      <section className="max-w-[1400px] mx-auto px-6 mt-20">
+        <div className="grid lg:grid-cols-12 gap-16">
+
+          {/* LEFT: Sidebar Actions (Sticky) */}
+          <aside className="lg:col-span-1 hidden lg:block">
+            <div className="sticky top-40 flex flex-col gap-8 items-center">
+              <button className="w-12 h-12 rounded-full border border-slate-200 flex items-center justify-center hover:bg-slate-900 hover:text-white transition-all">
+                <Share2 size={18} />
+              </button>
+              <div className="h-20 w-[1px] bg-slate-100" />
+            </div>
+          </aside>
+
+          {/* CENTER: Main Content */}
+          <div className="lg:col-span-7">
+            {/* Görsel Galeri (Editorial Style) */}
+            <div className="relative mb-16 group">
+              <div className="relative h-[500px] md:h-[700px] overflow-hidden rounded-[3rem] shadow-2xl">
+                <AnimatePresence mode="wait">
+                  <motion.div
+                    key={activeIdx}
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.8 }}
+                    className="absolute inset-0"
+                  >
+                    <Image src={gallery[activeIdx]} alt="Cover" fill className="object-cover" />
+                  </motion.div>
+                </AnimatePresence>
+                <div className="absolute inset-0 bg-gradient-to-t from-slate-950/40 to-transparent" />
+              </div>
+
+              {gallery.length > 1 && (
+                <div className="absolute -bottom-6 right-10 flex gap-2">
+                  <button onClick={() => setActiveIdx(p => (p - 1 + gallery.length) % gallery.length)} className="w-14 h-14 bg-white rounded-full flex items-center justify-center shadow-xl hover:bg-orange-500 hover:text-white transition-all">
+                    <ChevronLeft size={24} />
+                  </button>
+                  <button onClick={() => setActiveIdx(p => (p + 1) % gallery.length)} className="w-14 h-14 bg-slate-900 text-white rounded-full flex items-center justify-center shadow-xl hover:bg-orange-500 transition-all">
+                    <ChevronRight size={24} />
+                  </button>
+                </div>
+              )}
+            </div>
+
+            {/* Article Text */}
+            <div className="prose prose-slate max-w-none">
+              <p className="text-2xl md:text-3xl text-slate-900 font-black italic tracking-tighter leading-snug mb-12">
+                {post.excerpt || "Bu makalede CBO Yapı'nın modern mimari vizyonu ve güncel mühendislik yaklaşımları detaylandırılmaktadır."}
+              </p>
+              <div className="text-lg text-slate-600 font-medium leading-relaxed space-y-8">
+                {post.content?.split('\n').map((paragraph: string, i: number) => (
+                  paragraph.trim() && <p key={i}>{paragraph.trim()}</p>
+                ))}
+              </div>
+            </div>
+
+            {/* Tags & Footer */}
+            <div className="mt-20 pt-10 border-t border-slate-100 flex flex-wrap gap-4">
+              {post.tags?.map((t: string, i: number) => (
+                <span key={i} className="px-6 py-2 bg-slate-50 text-slate-400 font-bold uppercase tracking-widest text-[10px] rounded-full hover:bg-orange-500 hover:text-white transition-all cursor-pointer">
+                  #{t}
+                </span>
+              ))}
             </div>
           </div>
-        )}
 
-        {/* İçerik */}
-        {post && (
-          <>
-            {/* Başlık + Galeri */}
-            <section className="grid grid-cols-1 lg:grid-cols-2 gap-10">
-              {/* Sol: Galeri */}
-              <div className="relative">
-                <div className="relative h-[440px] w-full overflow-hidden rounded-2xl border-2 border-slate-100 shadow-xl">
-                  <Image
-                    key={gallery[active]}
-                    src={gallery[active]}
-                    alt={post.title}
-                    fill
-                    className="object-cover transition-transform duration-500"
-                    sizes="(max-width: 1024px) 100vw, 600px"
-                  />
-
-                  {gallery.length > 1 && (
-                    <>
-                      <button
-                        onClick={prev}
-                        className="absolute left-4 top-1/2 -translate-y-1/2 rounded-full bg-white/95 hover:bg-white shadow-lg p-3 transition-all hover:scale-110"
-                        aria-label="Önceki"
-                      >
-                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                          <path d="M15 19l-7-7 7-7" />
-                        </svg>
-                      </button>
-                      <button
-                        onClick={next}
-                        className="absolute right-4 top-1/2 -translate-y-1/2 rounded-full bg-white/95 hover:bg-white shadow-lg p-3 transition-all hover:scale-110"
-                        aria-label="Sonraki"
-                      >
-                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                          <path d="M9 5l7 7-7 7" />
-                        </svg>
-                      </button>
-                    </>
-                  )}
-                </div>
-
-                {/* Thumbnail önizleme */}
-                {gallery.length > 1 && (
-                  <div className="mt-4 grid grid-cols-6 gap-2">
-                    {gallery.map((src, i) => (
-                      <button
-                        key={i}
-                        onClick={() => setActive(i)}
-                        className={`relative h-16 rounded-lg overflow-hidden ring-2 transition-all ${
-                          i === active
-                            ? "ring-slate-600 shadow-md"
-                            : "ring-slate-200 hover:ring-slate-400"
-                        }`}
-                      >
-                        <Image
-                          src={src}
-                          alt={`Önizleme ${i + 1}`}
-                          fill
-                          className="object-cover"
-                          sizes="100px"
-                        />
-                      </button>
-                    ))}
-                  </div>
-                )}
-              </div>
-
-              {/* Sağ: İçerik */}
-              <div className="flex flex-col">
-                <h1 className="text-3xl md:text-4xl font-extrabold leading-tight">
-                  <span className="bg-gradient-to-r from-slate-600 to-slate-300 bg-clip-text text-transparent">
-                    {post.title}
-                  </span>
-                </h1>
-
-                {/* Etiketler */}
-                {post.tags && post.tags.length > 0 && (
-                  <div className="mt-4 flex flex-wrap gap-2">
-                    {post.tags.map((t, i) => (
-                      <span
-                        key={i}
-                        className="text-xs px-3 py-1.5 rounded-full border border-slate-200 bg-slate-50 text-slate-700 font-medium"
-                      >
-                        #{t}
-                      </span>
-                    ))}
-                  </div>
-                )}
-
-                {/* İçerik */}
-                {post.content && (
-                  <article className="mt-6 prose prose-slate max-w-none text-gray-700 space-y-5">
-                    {post.content.split("\n").map((p, i) => {
-                      const line = p.trim();
-                      if (!line) return null;
-                      return (
-                        <p key={i} className="text-base leading-relaxed">
-                          {line}
-                        </p>
-                      );
-                    })}
-                  </article>
-                )}
-
-                {/* CTA */}
-                <div className="mt-8 pt-6 border-t border-slate-200">
-                  <Link
-                    href="/haberler-blog"
-                    className="inline-flex items-center gap-2 px-5 py-3 rounded-xl bg-slate-600 text-white font-semibold hover:bg-slate-700 transition-all hover:shadow-lg hover:-translate-y-0.5"
-                  >
-                    Tüm Yazılar
-                    <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                      <path d="M5 12h14" />
-                      <path d="M12 5l7 7-7 7" />
-                    </svg>
+          {/* RIGHT: Related Content */}
+          <div className="lg:col-span-4 lg:pl-10">
+            <div className="sticky top-32 space-y-12">
+              <h4 className="text-xl font-black uppercase italic tracking-tighter text-slate-900 border-b-2 border-orange-500 pb-4 inline-block">Sıradaki Yazılar</h4>
+              <div className="space-y-10">
+                {more?.map((m) => (
+                  <Link key={m.id} href={{ pathname: "/haber-blog-detay", query: { id: m.id } }} className="group block">
+                    <div className="relative h-40 overflow-hidden rounded-[2rem] mb-4">
+                      <Image src={m.coverUrl || m.images?.[0] || "/placeholder.jpg"} alt={m.title} fill className="object-cover group-hover:scale-110 transition-all duration-700 grayscale group-hover:grayscale-0" />
+                    </div>
+                    <h5 className="text-lg font-black uppercase italic tracking-tight text-slate-900 group-hover:text-orange-500 transition-colors line-clamp-2">
+                      {m.title}
+                    </h5>
+                    <div className="flex items-center gap-3 mt-2">
+                      <div className="h-[1px] w-6 bg-slate-200" />
+                      <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">OKUMAYA BAŞLA</span>
+                    </div>
                   </Link>
-                </div>
+                ))}
               </div>
-            </section>
 
-            {/* Diğer Yazılar */}
-            {more && more.length > 0 && (
-              <section className="mt-16">
-                <h2 className="text-2xl font-bold text-slate-800 mb-6">
-                  Benzer Yazılar
-                </h2>
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {more.map((m) => {
-                    const cover = m.coverUrl || m.images?.[0] || "/placeholder.jpg";
-                    const dt = m.createdAt?.toDate ? m.createdAt.toDate() : null;
-                    const dateStr = dt
-                      ? dt.toLocaleDateString("tr-TR", {
-                          day: "2-digit",
-                          month: "short",
-                          year: "numeric",
-                        })
-                      : "";
-
-                    return (
-                      <Link
-                        key={m.id}
-                        href={{ pathname: "/haber-blog-detay", query: { id: m.id } }}
-                        className="
-                          group block focus:outline-none
-                          rounded-2xl bg-white shadow-lg border border-slate-100
-                          transition-all duration-300
-                          hover:-translate-y-1 hover:shadow-2xl
-                          overflow-hidden
-                        "
-                      >
-                        <div className="relative h-48 w-full">
-                          <Image
-                            src={cover}
-                            alt={m.title}
-                            fill
-                            className="object-cover transition-transform duration-500 group-hover:scale-105"
-                            sizes="(max-width: 1024px) 100vw, 33vw"
-                          />
-                          {m.category && (
-                            <span className="absolute top-3 left-3 text-xs px-2.5 py-1 rounded-full bg-white/95 text-slate-800 border border-slate-200 font-medium">
-                              {m.category}
-                            </span>
-                          )}
-                        </div>
-
-                        <div className="p-5">
-                          <div className="flex items-center justify-between text-xs text-slate-500 mb-2">
-                            <span>{dateStr}</span>
-                            {m.tags && m.tags.length > 0 && (
-                              <span className="truncate max-w-[60%]">
-                                {m.tags.slice(0, 2).join(" · ")}
-                                {m.tags.length > 2 ? " +" : ""}
-                              </span>
-                            )}
-                          </div>
-
-                          <h3 className="font-bold text-lg text-slate-800 line-clamp-2 group-hover:text-slate-900 transition">
-                            {m.title}
-                          </h3>
-
-                          {m.excerpt && (
-                            <p className="mt-2 text-sm text-slate-600 line-clamp-2">
-                              {m.excerpt}
-                            </p>
-                          )}
-                        </div>
-
-                        <div className="px-5 pb-5">
-                          <span
-                            className="
-                              inline-flex items-center text-sm font-medium text-slate-600
-                              opacity-0 translate-y-1 group-hover:opacity-100 group-hover:translate-y-0
-                              transition-all duration-300
-                            "
-                          >
-                            Okumaya Devam Et
-                            <svg
-                              className="ml-1.5 w-4 h-4 transition-transform group-hover:translate-x-0.5"
-                              viewBox="0 0 24 24"
-                              fill="none"
-                              stroke="currentColor"
-                              strokeWidth="2"
-                            >
-                              <path d="M5 12h14" />
-                              <path d="M12 5l7 7-7 7" />
-                            </svg>
-                          </span>
-                        </div>
-                      </Link>
-                    );
-                  })}
-                </div>
-              </section>
-            )}
-          </>
-        )}
-      </div>
+              <div className="p-10 bg-slate-900 rounded-[3rem] text-white overflow-hidden relative group">
+                <div className="absolute top-0 right-0 w-32 h-32 bg-orange-500/20 blur-[50px] group-hover:scale-150 transition-transform duration-1000" />
+                <h4 className="text-xl font-black italic tracking-tighter mb-4">ÜCRETSİZ TEKLİF</h4>
+                <p className="text-slate-400 text-sm font-medium mb-8">Hayalinizdeki projeyi bizimle hayata geçirmek ister misiniz?</p>
+                <Link href="/teklif-al" className="inline-flex items-center gap-4 text-orange-500 font-black uppercase tracking-widest text-[10px] group">
+                  HEMEN BAŞLAYIN <ArrowRight size={14} className="group-hover:translate-x-2 transition-transform" />
+                </Link>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
     </main>
   );
 }
+
+// CSS for vertical text
+const style = `
+.vertical-text {
+    writing-mode: vertical-rl;
+    text-orientation: mixed;
+}
+`;

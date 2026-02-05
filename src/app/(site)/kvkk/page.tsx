@@ -1,290 +1,199 @@
-// app/kvkk/page.tsx
+"use client";
+
+import { motion, HTMLMotionProps } from "framer-motion"; // HTMLMotionProps eklendi
 import Link from "next/link";
-import { JSX } from "react";
+import { Shield, Globe, Lock, Send, ChevronRight } from "lucide-react";
 
 const ORG = {
   name: "CBO İnşaat",
-  address: "19 MAYIS MAH. TOYGAR SK. 54 NOLU B.B. NO: 36G, KAPAKLI / TEKİRDAĞ",
-  phone: "0511 111 11 11",
+  address: "19 Mayıs Mah. Toygar Sk. No: 36G, Kapaklı / Tekirdağ",
   email: "info@cboyapi.com",
-  website: "https://cboyapi.com",
   updatedAt: "05.11.2025",
+};
+
+// ÇÖZÜM: fadeInUp objesine açıkça tip tanımlıyoruz
+const fadeInUp: HTMLMotionProps<"section"> = {
+  initial: { opacity: 0, y: 40 },
+  whileInView: { opacity: 1, y: 0 },
+  viewport: { once: true },
+  transition: { duration: 0.8, ease: "easeOut" }
 };
 
 export default function KVKKPage() {
   return (
-    <main className="min-h-screen bg-white mt-20">
-      <div className="max-w-5xl mx-auto px-6 py-16">
-        {/* HERO BAŞLIK */}
-        <header className="text-center mb-14">
-          <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight">
-            <span className="bg-gradient-to-r from-slate-600 to-slate-300 bg-clip-text text-transparent">
-              Kişisel Verilerin Korunması
-            </span>
-          </h1>
-          <p className="mt-4 text-xl text-slate-600 font-medium">
-            KVKK Aydınlatma Metni
-          </p>
-          <p className="mt-3 text-sm text-slate-500">
-            Son güncelleme: <span className="font-bold">{ORG.updatedAt}</span>
-          </p>
-        </header>
-
-        {/* İÇİNDEKİLER – Kart + Hover */}
-        <nav className="mb-14">
-          <div className="rounded-3xl border-2 border-slate-100 bg-slate-50/80 p-8 shadow-lg backdrop-blur">
-            <p className="text-xl font-bold text-slate-800 mb-6 text-center">
-              İçindekiler
-            </p>
-            <ul className="grid sm:grid-cols-2 gap-4">
-              {[
-                ["Veri Sorumlusu", "#veri-sorumlusu"],
-                ["İşlenen Veriler", "#kategoriler"],
-                ["Amaç & Hukuki Sebep", "#amac-hukuki-sebep"],
-                ["Toplama Yöntemi", "#yontem"],
-                ["Aktarımlar", "#aktarim"],
-                ["Saklama Süreleri", "#saklama"],
-                ["Haklarınız", "#haklar"],
-                ["Başvuru", "#basvuru"],
-                ["Güvenlik", "#guvenlik"],
-                ["Çerezler", "#cerezler"],
-                ["Değişiklikler", "#degisiklikler"],
-              ].map(([t, href], i) => (
-                <li key={href} className="group">
-                  <a
-                    href={href}
-                    className="
-                      flex items-center gap-3 py-3 px-5 rounded-2xl
-                      bg-white/70 hover:bg-white shadow-md hover:shadow-xl
-                      border border-slate-200 hover:border-slate-300
-                      transition-all duration-300 group-hover:-translate-y-1
-                    "
-                  >
-                    <span className="w-9 h-9 rounded-full bg-slate-600 text-white flex items-center justify-center text-sm font-bold">
-                      {i + 1}
-                    </span>
-                    <span className="font-medium text-slate-700 group-hover:text-slate-900">
-                      {t}
-                    </span>
-                  </a>
-                </li>
-              ))}
-            </ul>
-          </div>
-        </nav>
-
-        {/* BÖLÜMLER */}
-        <article className="space-y-16">
-
-          {/* 1. Veri Sorumlusu */}
-          <section id="veri-sorumlusu">
-            <h2 className="text-2xl font-bold text-slate-900 mb-5 flex items-center gap-3">
-              <span className="w-10 h-10 rounded-full bg-slate-100 text-slate-600 flex items-center justify-center font-bold text-sm">1</span>
-              Veri Sorumlusu
-            </h2>
-            <div className="bg-gradient-to-r from-slate-50 to-white rounded-2xl p-7 border border-slate-200 shadow-md">
-              <p className="text-slate-700 leading-relaxed mb-4">
-                6698 sayılı KVKK uyarınca kişisel verileriniz; veri sorumlusu olarak{" "}
-                <strong className="text-slate-800">{ORG.name}</strong> tarafından aşağıda açıklanan kapsamda işlenmektedir.
-              </p>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 text-sm">
-                <InfoCard icon="building" label="Ticari Unvan">{ORG.name}</InfoCard>
-                <InfoCard icon="map-pin" label="Adres">{ORG.address}</InfoCard>
-                <InfoCard icon="phone" label="Telefon">
-                  <a href={`tel:${ORG.phone.replace(/\s/g, "")}`} className="hover:underline">{ORG.phone}</a>
-                </InfoCard>
-                <InfoCard icon="mail" label="E-posta">
-                  <a href={`mailto:${ORG.email}`} className="hover:underline">{ORG.email}</a>
-                </InfoCard>
-              </div>
-            </div>
-          </section>
-
-          {/* 2. İşlenen Veriler */}
-          <section id="kategoriler">
-            <h2 className="text-2xl font-bold text-slate-900 mb-5 flex items-center gap-3">
-              <span className="w-10 h-10 rounded-full bg-slate-100 text-slate-600 flex items-center justify-center font-bold text-sm">2</span>
-              İşlenen Kişisel Veri Kategorileri
-            </h2>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-              {[
-                "Kimlik (ad-soyad)",
-                "İletişim (tel, e-posta)",
-                "Teklif & Talep İçerikleri",
-                "IP & Log Kayıtları",
-                "Gönderilen Dosyalar",
-                "Finansal Bilgiler (gerekliyse)",
-              ].map((item, i) => (
-                <div key={i} className="bg-white border border-slate-200 rounded-2xl p-5 shadow hover:shadow-lg transition">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-full bg-emerald-100 flex items-center justify-center">
-                      <svg className="w-5 h-5 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                      </svg>
-                    </div>
-                    <p className="text-sm font-medium text-slate-700">{item}</p>
-                  </div>
-                </div>
-              ))}
-            </div>
-            <p className="mt-5 text-sm text-slate-500 bg-slate-50 border border-slate-200 rounded-xl p-5">
-              <strong>Not:</strong> Özel nitelikli veri (sağlık, din, biyometri vb.) yalnızca kanunen zorunlu ise ve ek tedbirlerle işlenir.
-            </p>
-          </section>
-
-          {/* 3. Amaç & Hukuki Sebep */}
-          <section id="amac-hukuki-sebep">
-            <h2 className="text-2xl font-bold text-slate-900 mb-5 flex items-center gap-3">
-              <span className="w-10 h-10 rounded-full bg-slate-100 text-slate-600 flex items-center justify-center font-bold text-sm">3</span>
-              İşleme Amaçları & Hukuki Sebepler
-            </h2>
-            <div className="space-y-5">
-              {[
-                { purpose: "Teklif & Proje Yönetimi", basis: "Sözleşmenin İfası" },
-                { purpose: "Yasal Yükümlülükler", basis: "Hukuki Yükümlülük" },
-                { purpose: "İletişim & Destek", basis: "Meşru Menfaat" },
-                { purpose: "Güvenlik & Dolandırıcılık Önleme", basis: "Meşru Menfaat" },
-                { purpose: "Pazarlama (İzinli)", basis: "Açık Rıza" },
-              ].map((item, i) => (
-                <div key={i} className="flex gap-4 items-start bg-white rounded-2xl p-5 border border-slate-200 shadow-sm hover:shadow-md transition">
-                  <div className="w-12 h-12 rounded-full bg-slate-600 text-white flex items-center justify-center font-bold text-sm">
-                    {i + 1}
-                  </div>
-                  <div>
-                    <p className="font-semibold text-slate-800">{item.purpose}</p>
-                    <p className="text-sm text-slate-600 mt-1">Hukuki Sebep: <span className="font-medium">{item.basis}</span></p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </section>
-
-          {/* 4. Toplama Yöntemi */}
-          <section id="yontem">
-            <h2 className="text-2xl font-bold text-slate-900 mb-5 flex items-center gap-3">
-              <span className="w-10 h-10 rounded-full bg-slate-100 text-slate-600 flex items-center justify-center font-bold text-sm">4</span>
-              Toplama Yöntemi
-            </h2>
-            <div className="bg-slate-50 rounded-2xl p-7 border border-slate-200">
-              <p className="text-slate-700">
-                Verileriniz şu yollarla toplanır:
-              </p>
-              <div className="mt-5 grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <LinkCard href="/iletisim" label="İletişim Formu" />
-                <LinkCard href="/teklif-al" label="Teklif Formu" />
-                <SimpleCard label="E-posta & Telefon" />
-                <SimpleCard label="Çerezler & Loglar" />
-              </div>
-            </div>
-          </section>
-
-          {/* 5. Aktarımlar */}
-          <section id="aktarim">
-            <h2 className="text-2xl font-bold text-slate-900 mb-5 flex items-center gap-3">
-              <span className="w-10 h-10 rounded-full bg-slate-100 text-slate-600 flex items-center justify-center font-bold text-sm">5</span>
-              Aktarımlar
-            </h2>
-            <p className="text-slate-700 bg-amber-50 border border-amber-200 rounded-xl p-5">
-              <strong>Yurt dışı aktarım:</strong> Firebase (Google) üzerinden gerçekleşir. Açık rıza alınır veya KVKK standartları sağlanır.
-            </p>
-          </section>
-
-          {/* 6–11. Kısa Kartlar */}
-          <div className="grid md:grid-cols-2 gap-8">
-            <ShortSection id="saklama" num="6" title="Saklama Süreleri">
-              Amaç bitince silinir. Yasal süreler (10 yıl) saklanır.
-            </ShortSection>
-            <ShortSection id="haklar" num="7" title="KVKK m.11 Haklarınız">
-              Bilgi, düzeltme, silme, itiraz, tazminat...
-            </ShortSection>
-            <ShortSection id="basvuru" num="8" title="Başvuru">
-              E-posta: {ORG.email}<br />Posta: {ORG.address}
-            </ShortSection>
-            <ShortSection id="guvenlik" num="9" title="Güvenlik">
-              Şifreleme · Yetkilendirme · Yedekleme
-            </ShortSection>
-            <ShortSection id="cerezler" num="10" title="Çerezler">
-              <Link href="/cerez-politikasi" className="underline font-medium">Çerez Politikası</Link>
-            </ShortSection>
-            <ShortSection id="degisiklikler" num="11" title="Değişiklikler">
-              Güncellemeler bu sayfada yayımlanır.
-            </ShortSection>
-          </div>
-        </article>
-
-        {/* ALT CTA */}
-        <div className="mt-20 text-center">
-          <Link
-            href="/iletisim"
-            className="
-              group inline-flex items-center gap-4 px-8 py-5 rounded-2xl
-              bg-gradient-to-r from-slate-600 to-slate-700 text-white font-bold text-lg
-              hover:from-slate-700 hover:to-slate-800
-              shadow-2xl hover:shadow-3xl hover:-translate-y-1
-              transition-all duration-300
-            "
+    <main className="min-h-screen bg-white pt-32 pb-20 overflow-hidden">
+      <div className="max-w-[1400px] mx-auto px-6">
+        
+        {/* HEADER SECTION */}
+        <div className="relative mb-24 border-b border-slate-100 pb-16">
+          <motion.div 
+            initial={{ opacity: 0, x: -50 }}
+            animate={{ opacity: 1, x: 0 }}
           >
-            Sorunuz mu var? Hemen Ulaşın
-            <svg className="w-6 h-6 transition group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-            </svg>
-          </Link>
-          <p className="mt-5 text-xs text-slate-500 max-w-2xl mx-auto">
-            *Bu metin KVKK m.10 kapsamında hazırlanmıştır. Hukuki yorum için uzman görüşü alınız.
-          </p>
+            <h1 className="text-[7vw] md:text-[80px] font-black leading-none uppercase italic tracking-tighter text-slate-900">
+              KVKK <br /> 
+              <span className="text-transparent [-webkit-text-stroke:1.5px_#0f172a] opacity-30">AYDINLATMA</span>
+            </h1>
+          </motion.div>
+          <div className="mt-8 flex items-center justify-between flex-wrap gap-6">
+            <div className="flex items-center gap-4">
+               <div className="h-[2px] w-12 bg-orange-500" />
+               <p className="text-slate-400 font-bold uppercase tracking-widest text-[10px]">6698 Sayılı Kanun Uyarınca</p>
+            </div>
+            <p className="text-slate-300 font-mono text-[10px] uppercase tracking-tighter">Son Revizyon: {ORG.updatedAt}</p>
+          </div>
+        </div>
+
+        {/* SIDE-BY-SIDE CONTENT */}
+        <div className="grid lg:grid-cols-12 gap-16">
+          
+          {/* LEFT: Internal Navigation */}
+          <aside className="lg:col-span-4 lg:sticky lg:top-32 h-fit space-y-8">
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              className="bg-slate-900 p-10 rounded-[3rem] text-white"
+            >
+              <Shield className="text-orange-500 mb-6" size={32} />
+              <h3 className="text-xl font-black uppercase italic tracking-tighter mb-6">Veri Rehberi</h3>
+              <ul className="space-y-4">
+                {[
+                  { t: "Veri Sorumlusu", h: "#sorumlu" },
+                  { t: "Veri Kategorileri", h: "#kategoriler" },
+                  { t: "Hukuki Sebep", h: "#amac" },
+                  { t: "Haklarınız", h: "#haklar" },
+                ].map((item, i) => (
+                  <li key={i}>
+                    <a href={item.h} className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-slate-400 hover:text-orange-500 transition-colors">
+                      <ChevronRight size={12} /> {item.t}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </motion.div>
+            
+            <div className="px-8 py-6 border-l-2 border-slate-100 italic text-slate-400 text-sm leading-relaxed">
+              "Verileriniz, mimari projelerimizin her bir tuğlası kadar özenle ve güvenle saklanmaktadır."
+            </div>
+          </aside>
+
+          {/* RIGHT: Main Text */}
+          <div className="lg:col-span-8 space-y-32">
+            
+            {/* 1. Veri Sorumlusu */}
+            <motion.section id="sorumlu" {...fadeInUp}>
+              <div className="flex items-center gap-4 mb-8">
+                <div className="w-10 h-10 bg-slate-100 rounded-xl flex items-center justify-center text-slate-900 font-black italic">01</div>
+                <h2 className="text-2xl font-black uppercase italic tracking-tighter text-slate-900 underline decoration-orange-500/30 decoration-4 underline-offset-8">Veri Sorumlusu</h2>
+              </div>
+              <div className="grid md:grid-cols-2 gap-6 mt-10">
+                <div className="p-8 bg-slate-50 rounded-[2rem] border border-slate-100">
+                  <h4 className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2">Ticari Unvan</h4>
+                  <p className="text-slate-900 font-black uppercase italic tracking-tight">{ORG.name}</p>
+                </div>
+                <div className="p-8 bg-slate-50 rounded-[2rem] border border-slate-100">
+                  <h4 className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2">Resmi Adres</h4>
+                  <p className="text-slate-900 text-sm font-medium">{ORG.address}</p>
+                </div>
+              </div>
+            </motion.section>
+
+            {/* 2. Kategoriler */}
+            <motion.section id="kategoriler" {...fadeInUp}>
+               <div className="flex items-center gap-4 mb-12">
+                <div className="w-10 h-10 bg-slate-100 rounded-xl flex items-center justify-center text-slate-900 font-black italic">02</div>
+                <h2 className="text-2xl font-black uppercase italic tracking-tighter text-slate-900 underline decoration-orange-500/30 decoration-4 underline-offset-8">İşlenen Veri Grupları</h2>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {[
+                  "Kimlik (Ad, Soyad)",
+                  "İletişim (Tel, E-posta)",
+                  "Müşteri İşlem (Talep içeriği)",
+                  "İşlem Güvenliği (IP, Loglar)",
+                  "Görsel Veriler (Dosya paylaşımları)"
+                ].map((text, i) => (
+                  <div key={i} className="flex items-center gap-4 p-6 border-b border-slate-100 group hover:bg-slate-50 transition-colors">
+                    <div className="w-2 h-2 bg-orange-500 rounded-full group-hover:scale-150 transition-transform" />
+                    <span className="text-slate-800 font-bold uppercase tracking-widest text-xs">{text}</span>
+                  </div>
+                ))}
+              </div>
+            </motion.section>
+
+            {/* 3. Amaçlar */}
+            <motion.section id="amac" {...fadeInUp}>
+              <div className="bg-slate-50 p-12 md:p-16 rounded-[4rem] relative overflow-hidden">
+                <div className="absolute top-0 right-0 w-64 h-64 bg-orange-500/5 blur-[100px] rounded-full" />
+                <div className="flex items-center gap-4 mb-12 relative z-10">
+                  <div className="w-10 h-10 bg-slate-900 rounded-xl flex items-center justify-center text-white font-black italic">03</div>
+                  <h2 className="text-2xl font-black uppercase italic tracking-tighter text-slate-900">Hukuki Amaçlar</h2>
+                </div>
+                <div className="space-y-6 relative z-10">
+                   {[
+                     { t: "Sözleşmenin İfası", d: "Teklif ve proje süreçlerinin yönetilmesi için zorunlu veriler." },
+                     { t: "Hukuki Yükümlülük", d: "Fatura ve resmi kayıtların mevzuata uygun tutulması." },
+                     { t: "Meşru Menfaat", d: "Sistem güvenliğinin sağlanması ve hizmet kalitesinin artırılması." }
+                   ].map((item, i) => (
+                     <div key={i} className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-8 bg-white rounded-3xl border border-slate-200">
+                        <span className="text-slate-900 font-black uppercase italic tracking-tighter text-lg">{item.t}</span>
+                        <p className="text-slate-500 text-sm font-medium max-w-sm">{item.d}</p>
+                     </div>
+                   ))}
+                </div>
+              </div>
+            </motion.section>
+
+            {/* 4. Haklar & Başvuru */}
+            <motion.section id="haklar" {...fadeInUp} className="pt-20 border-t border-slate-100">
+              <div className="grid lg:grid-cols-2 gap-12 items-start">
+                <div>
+                   <h3 className="text-3xl font-black uppercase italic tracking-tighter text-slate-900 mb-8">KVKK m.11 Haklarınız</h3>
+                   <p className="text-slate-500 font-medium leading-relaxed mb-8">
+                     Verilerinizin işlenip işlenmediğini öğrenme, hatalı verilerin düzeltilmesini isteme ve verilerinizin silinmesini talep etme hakkına sahipsiniz.
+                   </p>
+                   <div className="p-8 bg-slate-900 rounded-[3rem] text-white">
+                      <Lock className="text-orange-500 mb-6" size={24} />
+                      <h4 className="text-[10px] font-black uppercase tracking-widest mb-4">Veri Silme Talebi</h4>
+                      <p className="text-slate-400 text-sm leading-relaxed">Başvurularınızı ıslak imzalı dilekçe ile ofisimize veya güvenli e-imzalı olarak e-posta adresimize iletebilirsiniz.</p>
+                   </div>
+                </div>
+
+                <div className="space-y-12">
+                   <div className="flex flex-col gap-2">
+                      <span className="text-[10px] font-black uppercase tracking-[0.5em] text-slate-300">Yasal İletişim</span>
+                      <a href={`mailto:${ORG.email}`} className="text-2xl font-black uppercase italic text-slate-900 hover:text-orange-500 transition-colors flex items-center gap-4 group">
+                        {ORG.email} <Send size={20} className="group-hover:translate-x-2 transition-transform" />
+                      </a>
+                   </div>
+                   <div className="p-10 border-2 border-dashed border-slate-100 rounded-[3rem] flex items-center gap-8">
+                      <div className="shrink-0 w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center">
+                        <Globe className="text-slate-300" />
+                      </div>
+                      <p className="text-slate-400 text-xs font-bold uppercase tracking-widest leading-loose">
+                        Verileriniz Google Firebase <br /> altyapısında güvenle saklanır.
+                      </p>
+                   </div>
+                </div>
+              </div>
+            </motion.section>
+
+          </div>
         </div>
       </div>
+
+      {/* FOOTER CTA */}
+      <motion.div 
+        initial={{ opacity: 0 }}
+        whileInView={{ opacity: 1 }}
+        className="mt-40 text-center border-t border-slate-50 pt-20"
+      >
+        <Link 
+          href="/iletisim" 
+          className="inline-flex items-center gap-8 text-slate-900 font-black uppercase italic tracking-tighter text-3xl md:text-5xl group"
+        >
+          SORUNUZ MU VAR? 
+        </Link>
+      </motion.div>
     </main>
-  );
-}
-
-/* Yardımcı Bileşenler */
-function InfoCard({ icon, label, children }: { icon: string; label: string; children: React.ReactNode }) {
-  const icons: Record<string, JSX.Element> = {
-    building: <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h-4m-6 0H5" /></svg>,
-    "map-pin": <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" /></svg>,
-    phone: <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" /></svg>,
-    mail: <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>,
-  };
-  return (
-    <div className="flex items-start gap-3 bg-white rounded-xl p-4 border border-slate-100">
-      <div className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center text-slate-600">
-        {icons[icon]}
-      </div>
-      <div>
-        <p className="text-xs font-bold text-slate-900 uppercase tracking-wider">{label}</p>
-        <div className="mt-1 text-sm text-slate-700">{children}</div>
-      </div>
-    </div>
-  );
-}
-
-function LinkCard({ href, label }: { href: string; label: string }) {
-  return (
-    <Link href={href} className="block bg-white rounded-xl p-5 border border-slate-200 shadow hover:shadow-md transition text-center">
-      <p className="font-medium text-slate-700">{label}</p>
-    </Link>
-  );
-}
-
-function SimpleCard({ label }: { label: string }) {
-  return (
-    <div className="bg-white rounded-xl p-5 border border-slate-200 shadow text-center">
-      <p className="font-medium text-slate-700">{label}</p>
-    </div>
-  );
-}
-
-function ShortSection({ id, num, title, children }: { id: string; num: string; title: string; children: React.ReactNode }) {
-  return (
-    <section id={id}>
-      <h2 className="text-xl font-bold text-slate-900 mb-4 flex items-center gap-3">
-        <span className="w-9 h-9 rounded-full bg-slate-600 text-white flex items-center justify-center text-sm font-bold">{num}</span>
-        {title}
-      </h2>
-      <div className="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm">
-        <div className="text-slate-700 text-sm leading-relaxed" dangerouslySetInnerHTML={{ __html: children as string }} />
-      </div>
-    </section>
   );
 }

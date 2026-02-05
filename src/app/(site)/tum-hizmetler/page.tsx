@@ -3,14 +3,9 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
+import { motion, AnimatePresence } from "framer-motion";
 import { db } from "@/firebase/config";
-import {
-  collection,
-  getDocs,
-  orderBy,
-  query,
-  Timestamp,
-} from "firebase/firestore";
+import { collection, getDocs, orderBy, query, Timestamp } from "firebase/firestore";
 
 type ServiceDoc = {
   id: string;
@@ -21,11 +16,6 @@ type ServiceDoc = {
   createdAt?: Timestamp | null;
 };
 
-function excerpt(text: string, n = 140) {
-  const t = (text || "").trim();
-  return t.length > n ? t.slice(0, n) + "…" : t;
-}
-
 export default function AllServicesPage() {
   const [services, setServices] = useState<ServiceDoc[] | null>(null);
   const [qText, setQText] = useState("");
@@ -35,17 +25,10 @@ export default function AllServicesPage() {
       try {
         const qy = query(collection(db, "services"), orderBy("createdAt", "desc"));
         const snap = await getDocs(qy);
-        const list: ServiceDoc[] = snap.docs.map((d) => {
-          const data = d.data() as Omit<ServiceDoc, "id">;
-          return {
-            id: d.id,
-            name: data.name,
-            description: data.description,
-            slug: data.slug,
-            imageUrl: data.imageUrl,
-            createdAt: (data as any).createdAt ?? null,
-          };
-        });
+        const list: ServiceDoc[] = snap.docs.map((d) => ({
+          id: d.id,
+          ...(d.data() as Omit<ServiceDoc, "id">),
+        }));
         setServices(list);
       } catch (e) {
         console.error(e);
@@ -61,130 +44,142 @@ export default function AllServicesPage() {
     return services.filter(
       (s) =>
         s.name?.toLowerCase().includes(q) ||
-        s.description?.toLowerCase().includes(q) ||
-        s.slug?.toLowerCase().includes(q)
+        s.description?.toLowerCase().includes(q)
     );
   }, [services, qText]);
 
   return (
-    <main className="min-h-screen bg-white mt-20">
-      <div className="max-w-7xl mx-auto px-6 py-10">
-        {/* Başlık */}
-        <div className="text-center mb-8">
-          <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight">
-            <span className="bg-gradient-to-r from-slate-600 to-slate-300 bg-clip-text text-transparent">
-              Tüm Hizmetler
+    <main className="min-h-screen bg-white pt-32 pb-20 overflow-hidden">
+      <div className="max-w-[1400px] mx-auto px-6">
+        
+        {/* HEADER: Dev Tipografi ve Arama */}
+        <div className="relative mb-24">
+          <motion.h1 
+            initial={{ opacity: 0, x: -50 }}
+            animate={{ opacity: 1, x: 0 }}
+            className="text-[12vw] md:text-[120px] font-black leading-none uppercase tracking-tighter text-slate-900 italic"
+          >
+            UZMANLIK <br />
+            <span className="text-transparent [-webkit-text-stroke:1.5px_#0f172a] opacity-40">ALANLARI</span>
+          </motion.h1>
+
+          <div className="mt-12 flex flex-col md:flex-row items-end justify-between gap-8">
+            <p className="max-w-xl text-slate-500 text-lg font-medium leading-relaxed">
+              CBO Yapı olarak, geleneksel yöntemleri modern mühendislik vizyonuyla harmanlıyoruz. 
+              İşte geleceği inşa ettiğimiz temel disiplinlerimiz.
+            </p>
+            
+            {/* Minimalist Arama Barı */}
+            <div className="relative w-full md:w-80 group">
+              <input
+                value={qText}
+                onChange={(e) => setQText(e.target.value)}
+                placeholder="Hizmetlerde ara..."
+                className="text-black w-full bg-transparent border-b-2 border-slate-200 py-4 outline-none focus:border-orange-500 transition-colors font-bold uppercase tracking-widest text-xs"
+              />
+              <div className="absolute right-0 bottom-4 text-slate-300 group-focus-within:text-orange-500 transition-colors">
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* SERVICES GRID: Listeleme */}
+        <div className="space-y-4">
+          <AnimatePresence mode="popLayout">
+            {filtered?.map((s, idx) => (
+              <ServiceRow key={s.id} service={s} index={idx} />
+            ))}
+          </AnimatePresence>
+
+          {/* Boş Sonuç */}
+          {filtered && filtered.length === 0 && (
+            <motion.div 
+              initial={{ opacity: 0 }} 
+              animate={{ opacity: 1 }}
+              className="py-20 text-center border-2 border-dashed border-slate-100 rounded-[3rem]"
+            >
+              <span className="text-4xl font-black text-slate-200 uppercase italic">Sonuç Bulunamadı</span>
+            </motion.div>
+          )}
+
+          {/* Loading State */}
+          {!services && (
+             <div className="space-y-4">
+               {[...Array(3)].map((_, i) => (
+                 <div key={i} className="h-40 w-full bg-slate-50 animate-pulse rounded-3xl" />
+               ))}
+             </div>
+          )}
+        </div>
+      </div>
+    </main>
+  );
+}
+
+function ServiceRow({ service, index }: { service: ServiceDoc; index: number }) {
+  const [isHovered, setIsHovered] = useState(false);
+
+  return (
+    <motion.div
+      layout
+      initial={{ opacity: 0, y: 30 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, scale: 0.95 }}
+      transition={{ duration: 0.6, delay: index * 0.1 }}
+    >
+      <Link 
+        href={{ pathname: "/hizmet-detay", query: { id: service.id } }}
+        onMouseEnter={() => setIsHovered(true)}
+        onMouseLeave={() => setIsHovered(false)}
+        className="group relative flex flex-col md:flex-row items-center gap-8 p-8 md:p-12 bg-slate-50 hover:bg-slate-900 transition-colors duration-500 rounded-[2rem] md:rounded-[4rem] overflow-hidden"
+      >
+
+
+        {/* Görsel Alanı */}
+        <div className="relative w-full md:w-72 h-48 md:h-48 overflow-hidden rounded-[2rem] shrink-0">
+          <Image
+            src={service.imageUrl || "/placeholder.jpg"}
+            alt={service.name}
+            fill
+            className={`object-cover transition-all duration-700 ${isHovered ? 'scale-110 grayscale-0' : 'scale-100 grayscale'}`}
+          />
+          <div className="absolute inset-0 bg-orange-500/10 group-hover:bg-transparent transition-colors" />
+        </div>
+
+        {/* Metin İçeriği */}
+        <div className="relative z-10 flex-1">
+          <div className="flex items-center gap-3 mb-4">
+            <div className={`h-[2px] bg-orange-500 transition-all duration-500 ${isHovered ? 'w-12' : 'w-0'}`} />
+            <span className="text-orange-500 font-bold uppercase tracking-[0.3em] text-xs">
+              Premium Service
             </span>
-          </h1>
-          <p className="mt-3 text-gray-600 max-w-3xl mx-auto">
-            Mimari tasarımdan anahtar teslim uygulamaya kadar; modern, güvenli ve uzun ömürlü çözümler.
-            Aşağıdan tüm hizmetlerimizi inceleyebilir, detay sayfalarında ilgili projeleri görebilirsiniz.
+          </div>
+          
+          <h3 className="text-3xl md:text-5xl font-black uppercase italic tracking-tighter text-slate-900 group-hover:text-white transition-colors mb-4">
+            {service.name}
+          </h3>
+          
+          <p className="text-slate-500 group-hover:text-slate-400 transition-colors max-w-2xl line-clamp-2 font-medium">
+            {service.description}
           </p>
         </div>
 
-        {/* Arama / Sayaç */}
-        <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3 mb-6">
-          <div className="relative w-full md:max-w-md">
-            <input
-              value={qText}
-              onChange={(e) => setQText(e.target.value)}
-              placeholder="Hizmetlerde ara…"
-              className="w-full rounded-lg border border-gray-300 px-4 py-2.5 pr-10 text-gray-900 focus:outline-none focus:ring-2 focus:ring-slate-600 focus:border-slate-600"
-            />
-            <svg
-              className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-            >
-              <circle cx="11" cy="11" r="7" />
-              <path d="M21 21l-4.35-4.35" />
-            </svg>
-          </div>
-
-          {filtered && (
-            <span className="text-sm text-gray-500">
-              Toplam: <b>{filtered.length}</b> Hizmet
-            </span>
-          )}
+        {/* Ok Butonu */}
+        <div className={`hidden lg:flex w-20 h-20 items-center justify-center rounded-full border-2 transition-all duration-500 
+          ${isHovered ? 'bg-orange-500 border-orange-500 rotate-45' : 'border-slate-200'}`}>
+          <svg 
+            className={`w-8 h-8 transition-colors ${isHovered ? 'text-white' : 'text-slate-300'}`} 
+            fill="none" 
+            stroke="currentColor" 
+            viewBox="0 0 24 24"
+          >
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M14 5l7 7m0 0l-7 7m7-7H3" />
+          </svg>
         </div>
-
-        {/* Loading */}
-        {services === null && (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {[...Array(6)].map((_, i) => (
-              <div key={i} className="rounded-2xl bg-white p-4 animate-pulse shadow-md border border-gray-100">
-                <div className="h-48 w-full rounded-xl bg-gray-200" />
-                <div className="mt-4 h-4 w-2/3 bg-gray-200 rounded" />
-                <div className="mt-2 h-3 w-full bg-gray-200 rounded" />
-              </div>
-            ))}
-          </div>
-        )}
-
-        {/* Empty */}
-        {services && filtered && filtered.length === 0 && (
-          <div className="rounded-xl border border-dashed border-gray-300 p-8 text-center text-gray-600">
-            Sonuca uygun hizmet bulunamadı.
-          </div>
-        )}
-
-        {/* Grid */}
-        {filtered && filtered.length > 0 && (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filtered.map((s) => (
-              <Link
-                key={s.id}
-                href={{ pathname: "/hizmet-detay", query: { id: s.id } }}
-                className="
-                  group block focus:outline-none
-                  rounded-2xl bg-white shadow-lg border border-gray-100
-                  transition-all duration-300
-                  hover:-translate-y-1 hover:shadow-xl
-                "
-              >
-                <div className="relative h-48 w-full overflow-hidden rounded-t-2xl">
-                  <Image
-                    src={s.imageUrl || "/placeholder.jpg"}
-                    alt={s.name}
-                    fill
-                    className="object-cover transition-transform duration-300 group-hover:scale-[1.02]"
-                    sizes="(max-width: 1024px) 100vw, 33vw"
-                  />
-                </div>
-                <div className="p-4">
-                  <h3 className="text-gray-900 font-semibold text-lg">{s.name}</h3>
-                  <p className="mt-1 text-sm text-gray-600">{excerpt(s.description)}</p>
-                </div>
-                <div className="px-4 pb-4">
-                  <span
-                    className="
-                      inline-flex items-center text-sm font-medium text-slate-600
-                      opacity-0 translate-y-1 group-hover:opacity-100 group-hover:translate-y-0
-                      transition-all duration-300
-                    "
-                  >
-                    Detaya Git
-                    <svg
-                      className="ml-1 w-4 h-4 transition-transform duration-300 group-hover:translate-x-0.5"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                    >
-                      <path d="M5 12h14" />
-                      <path d="M12 5l7 7-7 7" />
-                    </svg>
-                  </span>
-                </div>
-              </Link>
-            ))}
-          </div>
-        )}
-
-     
-      </div>
-    </main>
+      </Link>
+    </motion.div>
   );
 }

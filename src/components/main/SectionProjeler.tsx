@@ -1,4 +1,3 @@
-// File: app/components/SectionProjeler.tsx
 "use client";
 
 import { useEffect, useState } from "react";
@@ -6,22 +5,17 @@ import Image from "next/image";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { db } from "@/firebase/config";
-import { collection, getDocs, orderBy, query } from "firebase/firestore";
+import { collection, getDocs, orderBy, query, limit } from "firebase/firestore";
 
 type Project = {
   id: string;
   name?: string;
-  title?: string;
-  description?: string;
-  status?: "ongoing" | "completed";
   images?: string[];
   coverUrl?: string;
-  location?: string;
 };
 
-function excerpt(text: string, n = 110) {
-  const t = (text || "").trim();
-  return t.length > n ? t.slice(0, n) + "…" : t;
+function pickCover(p: Project) {
+  return (p.images && p.images[0]) || p.coverUrl || "/placeholder.jpg";
 }
 
 export default function SectionProjeler() {
@@ -30,25 +24,14 @@ export default function SectionProjeler() {
   useEffect(() => {
     (async () => {
       try {
-        const q = query(collection(db, "projects"), orderBy("createdAt", "desc"));
+        const q = query(
+          collection(db, "projects"),
+          orderBy("createdAt", "desc"),
+          limit(4)
+        );
         const snap = await getDocs(q);
-        const list: Project[] = snap.docs.map((d) => {
-          const x = d.data() as any;
-          return {
-            id: d.id,
-            name: x.name || x.title,
-            title: x.title,
-            description: x.description,
-            status: x.status,
-            images: x.images || [],
-            coverUrl: x.coverUrl,
-            location: x.location,
-          };
-        });
-
-        // Rastgele 4 proje seç
-        const shuffled = list.sort(() => 0.5 - Math.random()).slice(0, 4);
-        setProjects(shuffled);
+        const list = snap.docs.map((d) => ({ id: d.id, ...d.data() } as Project));
+        setProjects(list);
       } catch (e) {
         console.error(e);
         setProjects([]);
@@ -56,174 +39,99 @@ export default function SectionProjeler() {
     })();
   }, []);
 
-  // Animasyon varyantları
-  const container = {
-    hidden: { opacity: 0 },
-    show: {
-      opacity: 1,
-      transition: {
-        staggerChildren: 0.2,
-      },
-    },
-  };
+  if (!projects) return <div className="py-20 text-center font-bold uppercase">Yükleniyor...</div>;
 
-  const item = {
-    hidden: { opacity: 0, y: 50, scale: 0.98 },
-    show: {
-      opacity: 1,
-      y: 0,
-      scale: 1,
-      transition: {
-        duration: 0.6,
-        ease: "easeOut" as const,
-      },
-    },
-  };
   return (
-    <section className="py-14 bg-white">
-      <div className="max-w-7xl mx-auto px-6">
-        {/* Başlık + alt açıklama */}
-        <div className="text-center mb-10">
-          <h2 className="text-3xl md:text-4xl font-extrabold tracking-tight">
-            <span className="bg-gradient-to-r from-slate-600 to-slate-300 bg-clip-text text-transparent">
-              Projelerimiz
-            </span>
-          </h2>
-          <p className="mt-3 text-gray-600 max-w-2xl mx-auto">
-            Son çalışmalarımızdan seçtiklerimiz. Tasarımdan uygulamaya, kalite ve estetiği bir araya getirdiğimiz projeler.
-          </p>
+    <section className="bg-white py-24">
+      <div className="w-full">
+        {/* Başlık - Sağ Tarafta */}
+        <div className="max-w-[1400px] mx-auto px-6 mb-16">
+          <div className="flex justify-end">
+            <div className="text-right">
+              <h2 className="text-5xl font-black text-slate-900 tracking-tighter uppercase">
+                Projeler
+              </h2>
+              <div className="mt-4 h-2 w-24 bg-orange-500 ml-auto" />
+            </div>
+          </div>
         </div>
 
-        {/* Loading skeleton */}
-        {projects === null && (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {[...Array(4)].map((_, i) => (
-              <div
-                key={i}
-                className="rounded-2xl bg-white p-4 animate-pulse shadow-md border border-gray-100"
-              >
-                <div className="h-48 w-full rounded-xl bg-gray-200" />
-                <div className="mt-4 h-4 w-2/3 bg-gray-200 rounded" />
-                <div className="mt-2 h-3 w-full bg-gray-200 rounded" />
-              </div>
-            ))}
-          </div>
-        )}
 
-        {/* Empty */}
-        {projects?.length === 0 && (
-          <div className="rounded-xl border border-dashed border-gray-300 p-8 text-center text-gray-600">
-            Henüz proje eklenmemiş.
-          </div>
-        )}
+        {/* Asimetrik Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-12 gap-0 auto-rows-[300px] md:auto-rows-[420px]">
+          {projects.map((project, index) => {
+            // Grid Mantığı: 
+            // 0. Proje: Sol Geniş (8 sütun)
+            // 1. Proje: Sağ Dar (4 sütun)
+            // 2. Proje: Sol Dar (4 sütun)
+            // 3. Proje: Sağ Geniş (8 sütun)
+            const gridClasses = [
+              "md:col-span-8", // 1. Proje
+              "md:col-span-4", // 2. Proje
+              "md:col-span-4", // 3. Proje
+              "md:col-span-8", // 4. Proje
+            ];
 
-        {/* Grid + Animasyon */}
-        {projects && projects.length > 0 && (
-          <motion.div
-            variants={container}
-            initial="hidden"
-            whileInView="show"
-            viewport={{ once: true, amount: 0.2 }}
-            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6"
-          >
-            {projects.map((p) => {
-              const title = p.name || p.title || "Proje";
-              const cover = (p.images && p.images[0]) || p.coverUrl || "/placeholder.jpg";
+            return (
+              <ProjectCard
+                key={project.id}
+                project={project}
+                className={gridClasses[index % 4]}
+              />
+            );
+          })}
+        </div>
 
-              return (
-                <motion.div key={p.id} variants={item}>
-                  <Link
-                    href={{ pathname: "/proje-detay", query: { id: p.id } }}
-                    className="
-                      group block focus:outline-none
-                      rounded-2xl bg-white shadow-lg border border-gray-100
-                      transition-all duration-300
-                      hover:-translate-y-1 hover:shadow-xl
-                    "
-                  >
-                    <div className="relative h-48 w-full overflow-hidden rounded-t-2xl">
-                      <Image
-                        src={cover}
-                        alt={title}
-                        fill
-                        className="object-cover transition-transform duration-300 group-hover:scale-[1.02]"
-                        sizes="(max-width: 1024px) 100vw, 25vw"
-                      />
-                    </div>
-
-                    <div className="p-4">
-                      <h3 className="text-gray-900 font-semibold text-lg line-clamp-1">
-                        {title}
-                      </h3>
-
-                      <div className="mt-1 flex items-center justify-between">
-                        {p.location ? (
-                          <p className="text-xs text-gray-500 line-clamp-1">{p.location}</p>
-                        ) : (
-                          <span />
-                        )}
-                        {p.status && (
-                          <span
-                            className={`text-[11px] px-2 py-0.5 rounded-full border ${p.status === "ongoing"
-                                ? "bg-amber-50 text-amber-700 border-amber-200"
-                                : "bg-emerald-50 text-emerald-700 border-emerald-200"
-                              }`}
-                          >
-                            {p.status === "ongoing" ? "Devam Eden" : "Bitmiş"}
-                          </span>
-                        )}
-                      </div>
-
-                      {p.description && (
-                        <p className="mt-2 text-sm text-gray-600 line-clamp-2">
-                          {excerpt(p.description)}
-                        </p>
-                      )}
-                    </div>
-
-                    <div className="px-4 pb-4">
-                      <span
-                        className="
-                          inline-flex items-center text-sm font-medium text-slate-600
-                          opacity-0 translate-y-1 group-hover:opacity-100 group-hover:translate-y-0
-                          transition-all duration-300
-                        "
-                      >
-                        Detaya Git
-                        <svg
-                          className="ml-1 w-4 h-4 transition-transform duration-300 group-hover:translate-x-0.5"
-                          viewBox="0 0 24 24"
-                          fill="none"
-                          stroke="currentColor"
-                          strokeWidth="2"
-                        >
-                          <path d="M5 12h14" />
-                          <path d="M12 5l7 7-7 7" />
-                        </svg>
-                      </span>
-                    </div>
-                  </Link>
-                </motion.div>
-              );
-            })}
-          </motion.div>
-        )}
-
-        {/* Alt kısım: Tümünü Gör butonu */}
-        <div className="mt-10 text-center">
+        {/* Alt Link */}
+        <div className="mt-20 text-center">
           <Link
             href="/tum-projeler"
-            className="
-              inline-flex items-center gap-2 px-5 py-2.5 rounded-lg font-semibold
-              bg-slate-600 text-white hover:bg-slate-700 active:scale-[0.98]
-              transition transform hover:scale-105
-              shadow-md hover:shadow-lg
-            "
+            className="text-black group relative inline-flex items-center gap-3 text-lg font-bold uppercase tracking-tighter"
           >
-            Tüm Projeler
+            <span>Tüm Projeleri Keşfet</span>
+            <div className="w-12 h-[2px] bg-slate-900 group-hover:w-20 transition-all duration-300"></div>
           </Link>
         </div>
       </div>
     </section>
+  );
+}
+
+function ProjectCard({ project, className }: { project: Project; className: string }) {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true }}
+      className={`relative group overflow-hidden bg-slate-100 cursor-pointer ${className}`}
+    >
+      <Link href={{ pathname: "/proje-detay", query: { id: project.id } }}>
+        {/* Görsel Katmanı */}
+        <div className="relative w-full h-full transition-transform duration-700 group-hover:scale-110">
+          <Image
+            src={pickCover(project)}
+            alt={project.name || ""}
+            fill
+            className="object-cover"
+            sizes="(max-width: 768px) 100vw, 50vw"
+          />
+          {/* Overlay (Hover'da kararma) */}
+          <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-colors duration-500" />
+        </div>
+
+        {/* Hover'da Çıkan İçerik */}
+        <div className="absolute inset-0 flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-500 z-10">
+          <div className="translate-y-4 group-hover:translate-y-0 transition-transform duration-500 text-center px-4">
+            <h4 className="text-white text-2xl font-bold uppercase tracking-tight mb-4">
+              {project.name}
+            </h4>
+            <span className="px-10 py-4 bg-white text-black font-bold uppercase tracking-widest text-sm hover:bg-slate-200 transition-colors inline-block">
+              Detaylı Gör
+            </span>
+
+          </div>
+        </div>
+      </Link>
+    </motion.div>
   );
 }

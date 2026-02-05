@@ -2,9 +2,9 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { MapPin, Phone, Mail, Facebook, Instagram, Linkedin } from "lucide-react";
+import { Facebook, Instagram, Linkedin, ArrowUpRight } from "lucide-react";
 
-/** Twitter yerine X logosu (brand) – custom SVG */
+/** Twitter yerine X logosu */
 function XIcon(props: React.SVGProps<SVGSVGElement>) {
   return (
     <svg viewBox="0 0 24 24" aria-hidden="true" {...props}>
@@ -20,121 +20,122 @@ export default function Footer() {
   const year = new Date().getFullYear();
 
   return (
-    <footer className="relative overflow-hidden bg-slate-950 text-slate-200">
-      {/* üst çizgi – marka rengi */}
-      <div className="h-1 w-full bg-gradient-to-r from-slate-500 via-slate-600 to-slate-700" />
-
-      {/* arka plan radial glow */}
-      <div
-        aria-hidden
-        className="pointer-events-none absolute inset-0 opacity-20"
-        style={{
-          background:
-            "radial-gradient(800px 400px at 20% 0%, rgba(100,116,139,.45), transparent 60%), radial-gradient(700px 300px at 90% 10%, rgba(71,85,105,.35), transparent 60%)",
-        }}
-      />
-
-      <div className="relative max-w-7xl mx-auto px-6 py-12 grid gap-8 md:grid-cols-2 lg:grid-cols-3">
-        {/* Hakkımızda */}
-        <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-6 backdrop-blur-sm">
-          <div className="flex items-center gap-2 mb-4">
-            <Image
-              src="/logo/logobeyaz.png"
-              alt="CBO İnşaat Logo"
-              width={80}
-              height={80}
-              className="object-contain rounded-lg"
-            />
-      
-          </div>
-          <p className="text-slate-300/90 leading-relaxed">
-            CBO İnşaat; inşaat, dekorasyon, çelik kapı, otomotiv ve yapı market alanlarında faaliyet gösterir.
-            Müşteri memnuniyeti odaklı yaklaşımıyla yaşam ve çalışma alanlarını yenileyen, dönüştüren ve
-            güzelleştiren çözümler üretir.
-          </p>
-        </div>
-
-        {/* Hızlı Linkler */}
-        <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-6 backdrop-blur-sm">
-          <h3 className="text-white font-semibold text-lg mb-4">Hızlı Linkler</h3>
-          <ul className="grid grid-cols-2 gap-y-3 text-slate-300">
-            <li><Link className="hover:text-white transition hover:scale-105 inline-block" href="/">Anasayfa</Link></li>
-            <li><Link className="hover:text-white transition hover:scale-105 inline-block" href="/tum-hizmetler">Hizmetlerimiz</Link></li>
-            <li><Link className="hover:text-white transition hover:scale-105 inline-block" href="/tum-projeler">Projelerimiz</Link></li>
-            <li><Link className="hover:text-white transition hover:scale-105 inline-block" href="/hakkimizda">Hakkımızda</Link></li>
-            <li><Link className="hover:text-white transition hover:scale-105 inline-block" href="/iletisim">İletişim</Link></li>
-            <li><Link className="hover:text-white transition hover:scale-105 inline-block" href="/kvkk">KVKK</Link></li>
-          </ul>
-        </div>
-
-        {/* İletişim + Sosyal */}
-        <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-6 backdrop-blur-sm">
-          <h3 className="text-white font-semibold text-lg mb-4">İletişim</h3>
-          <ul className="space-y-3 text-slate-300">
-            <li className="flex items-start gap-3">
-              <MapPin className="w-5 h-5 mt-0.5 text-slate-400" />
-              <span>19 MAYIS MAH. TOYGAR SK. 54 NOLU B.B. NO: 36G KAPAKLI / TEKİRDAĞ</span>
-            </li>
-            <li className="flex items-center gap-3">
-              <Phone className="w-5 h-5 text-slate-400" />
-              <a href="tel:05111111111" className="hover:text-white transition">0511 111 11 11</a>
-            </li>
-            <li className="flex items-center gap-3">
-              <Mail className="w-5 h-5 text-slate-400" />
-              <a href="mailto:info@cboinsaat.com" className="hover:text-white transition">info@cboinsaat.com</a>
-            </li>
-          </ul>
-
-          <div className="flex items-center gap-3 mt-6">
-            <a
-              aria-label="Facebook"
-              className="p-2 rounded-full bg-white/5 border border-white/10 hover:bg-white/10 hover:-translate-y-0.5 transition focus:outline-none focus:ring-2 focus:ring-slate-500"
-              href="#"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              <Facebook className="w-5 h-5" />
-            </a>
-            <a
-              aria-label="X (Twitter)"
-              className="p-2 rounded-full bg-white/5 border border-white/10 hover:bg-white/10 hover:-translate-y-0.5 transition focus:outline-none focus:ring-2 focus:ring-slate-500"
-              href="#"
-              target="_blank"
-              rel="noopener noreferrer"
-              title="X"
-            >
-              <XIcon className="w-5 h-5" />
-            </a>
-            <a
-              aria-label="LinkedIn"
-              className="p-2 rounded-full bg-white/5 border border-white/10 hover:bg-white/10 hover:-translate-y-0.5 transition focus:outline-none focus:ring-2 focus:ring-slate-500"
-              href="#"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              <Linkedin className="w-5 h-5" />
-            </a>
-            <a
-              aria-label="Instagram"
-              className="p-2 rounded-full bg-white/5 border border-white/10 hover:bg-white/10 hover:-translate-y-0.5 transition focus:outline-none focus:ring-2 focus:ring-slate-500"
-              href="#"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              <Instagram className="w-5 h-5" />
-            </a>
-          </div>
-        </div>
+    <footer className="relative bg-slate-950 text-white pt-24 pb-12 overflow-hidden">
+      {/* Arka Plan Dekoratif - Büyük Marka Yazısı (Transparent Outline) */}
+      <div className="absolute -bottom-10 left-0 w-full pointer-events-none select-none opacity-5">
+        <h2 className="text-[25vw] font-black leading-none uppercase italic text-transparent [-webkit-text-stroke:2px_#fff]">
+          CBO YAPI
+        </h2>
       </div>
 
-      {/* alt bar */}
-      <div className="relative border-t border-white/10">
-        <div className="max-w-7xl mx-auto px-6 py-5 text-sm flex flex-col md:flex-row items-center justify-between gap-3">
-          <span className="text-slate-400">© {year} CBO. Tüm hakları saklıdır.</span>
-          <div className="flex items-center gap-4 text-slate-400">
-            <Link href="/gizlilik-politikasi" className="hover:text-white transition">Gizlilik</Link>
-            <Link href="/sartlar" className="hover:text-white transition">Şartlar</Link>
-            <Link href="/iletisim" className="hover:text-white transition">İletişim</Link>
+      <div className="max-w-[1400px] mx-auto px-6 relative z-10">
+        <div className="grid lg:grid-cols-12 gap-16 mb-24">
+
+          {/* SOL: Marka Vizyon */}
+          <div className="lg:col-span-5">
+            <Image
+              src="/logo/logobeyaz.png"
+              alt="CBO İnşaat"
+              width={100}
+              height={100}
+              className="mb-8 opacity-90"
+            />
+            <p className="text-xl text-slate-400 font-medium leading-relaxed max-w-md">
+              Geleceğin yapılarını bugünden, estetik ve mühendisliğin kusursuz uyumuyla inşa ediyoruz.
+            </p>
+
+            <div className="flex gap-4 mt-10">
+              {[
+                { icon: <Facebook size={20} />, href: "#" },
+                { icon: <XIcon className="w-5 h-5" />, href: "#" },
+                { icon: <Instagram size={20} />, href: "#" },
+                { icon: <Linkedin size={20} />, href: "#" },
+              ].map((social, i) => (
+                <a
+                  key={i}
+                  href={social.href}
+                  className="w-12 h-12 flex items-center justify-center rounded-full border border-white/10 hover:bg-orange-500 hover:border-orange-500 transition-all duration-300"
+                >
+                  {social.icon}
+                </a>
+              ))}
+            </div>
+          </div>
+
+          {/* SAĞ: Link Grupları */}
+          <div className="lg:col-span-7 grid md:grid-cols-3 gap-12">
+            <div>
+              <h4 className="text-orange-500 font-bold uppercase tracking-[0.2em] text-xs mb-8">Kurumsal</h4>
+              <ul className="space-y-4">
+                {[
+                  { name: "Anasayfa", href: "/" },
+                  { name: "Hakkımızda", href: "/hakkimizda" },
+                  { name: "Hizmetlerimiz", href: "/tum-hizmetler" },
+                  { name: "Projelerimiz", href: "/tum-projeler" },
+                ].map((item) => (
+                  <li key={item.name}>
+                    <Link
+                      href={item.href}
+                      className="group flex items-center gap-2 text-slate-300 hover:text-white transition-colors"
+                    >
+                      {item.name}
+                      <ArrowUpRight
+                        size={14}
+                        className="opacity-0 group-hover:opacity-100 transition-all -translate-y-1"
+                      />
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+
+            </div>
+
+            <div>
+              <h4 className="text-orange-500 font-bold uppercase tracking-[0.2em] text-xs mb-8">Yasal</h4>
+              <ul className="space-y-4">
+                {[
+                  { name: "KVKK", href: "/kvkk" },
+                  { name: "Gizlilik Politikası", href: "/gizlilik-politikasi" },
+                  { name: "Şartlar", href: "/sartlar" },
+                  { name: "İletişim", href: "/iletisim" },
+                ].map((item) => (
+                  <li key={item.name}>
+                    <Link
+                      href={item.href}
+                      className="text-slate-300 hover:text-white transition-colors"
+                    >
+                      {item.name}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+
+            </div>
+
+            <div>
+              <h4 className="text-orange-500 font-bold uppercase tracking-[0.2em] text-xs mb-8">Bize Ulaşın</h4>
+              <p className="text-slate-300 text-sm leading-loose">
+                19 MAYIS MAH. TOYGAR SK. 54 NOLU B.B. <br /> NO: 36G KAPAKLI / TEKİRDAĞ
+              </p>
+              <div className="mt-6">
+                <a href="tel:05111111111" className="block text-xl font-bold hover:text-orange-500 transition-colors">
+                  0511 111 11 11
+                </a>
+                <a href="mailto:info@cboinsaat.com" className="text-slate-400 hover:text-white transition-colors">
+                  info@cboinsaat.com
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* ALT BAR: Minimalist */}
+        <div className="pt-12 border-t border-white/5 flex flex-col md:flex-row justify-between items-center gap-6">
+          <p className="text-slate-500 text-sm">
+            © {year} CBO İNŞAAT. All rights reserved.
+          </p>
+          <div className="flex items-center gap-8">
+            <div className="h-1 w-12 bg-orange-500" />
           </div>
         </div>
       </div>

@@ -1,328 +1,183 @@
-// app/sartlar/page.tsx
+"use client";
+
+import { motion } from "framer-motion";
 import Link from "next/link";
-import { JSX } from "react";
+import { Scale, ShieldCheck, FileText, Globe, Gavel, Mail } from "lucide-react";
 
 const ORG = {
   name: "CBO İnşaat",
-  address: "19 MAYIS MAH. TOYGAR SK. 54 NOLU B.B. NO: 36G, KAPAKLI / TEKİRDAĞ",
-  phone: "0511 111 11 11",
-  email: "info@cboyapi.com",
   updatedAt: "05.11.2025",
+};
+
+const containerVariants = {
+  initial: {},
+  whileInView: { transition: { staggerChildren: 0.1 } }
+};
+
+const itemVariants = {
+  initial: { opacity: 0, y: 20 },
+  whileInView: { opacity: 1, y: 0, transition: { duration: 0.5 } }
 };
 
 export default function TermsPage() {
   return (
-    <main className="min-h-screen bg-white mt-20">
-      <div className="max-w-5xl mx-auto px-6 py-16">
-        {/* HERO */}
-        <header className="text-center mb-14">
-          <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight">
-            <span className="bg-gradient-to-r from-slate-600 to-slate-300 bg-clip-text text-transparent">
-              Şartlar ve Koşullar
-            </span>
-          </h1>
-          <p className="mt-4 text-xl text-slate-600 font-medium">
-            Site Kullanım & Hizmet Sözleşmesi
-          </p>
-          <p className="mt-3 text-sm text-slate-500">
-            Son güncelleme: <span className="font-bold">{ORG.updatedAt}</span>
-          </p>
-        </header>
-
-        {/* İÇİNDEKİLER – Numaralı Hover Kart */}
-        <nav className="mb-14">
-          <div className="rounded-3xl border-2 border-slate-100 bg-slate-50/80 p-8 shadow-lg backdrop-blur">
-            <p className="text-xl font-bold text-slate-800 mb-6 text-center">
-              İçindekiler
+      <main className="min-h-screen bg-white pt-32 pb-20 overflow-hidden">
+      <div className="max-w-[1400px] mx-auto px-6">
+        
+        {/* HEADER SECTION */}
+        <div className="relative mb-24">
+          <motion.div 
+            initial={{ opacity: 0, x: -50 }}
+            animate={{ opacity: 1, x: 0 }}
+            className="max-w-4xl"
+          >
+            <h1 className="text-[8vw] md:text-[90px] font-black leading-none uppercase italic tracking-tighter text-slate-900">
+              ŞARTLAR & <br /> 
+              <span className="text-transparent [-webkit-text-stroke:1.5px_#0f172a] opacity-30">KOŞULLAR</span>
+            </h1>
+          </motion.div>
+          <div className="mt-8 flex items-center gap-6">
+            <div className="h-[1px] w-20 bg-slate-200" />
+            <p className="text-slate-400 font-bold uppercase tracking-widest text-[10px]">
+              Son Güncelleme: {ORG.updatedAt}
             </p>
-            <ul className="grid sm:grid-cols-2 gap-4">
-              {[
-                ["Kapsam", "#kapsam"],
-                ["Site Kullanımı", "#kullanim"],
-                ["Teklif & Sözleşme", "#teklif"],
-                ["Ödeme", "#odeme"],
-                ["Fikri Mülkiyet", "#fikri"],
-                ["Garanti Reddi", "#garanti"],
-                ["Sorumluluk Sınırı", "#sorumluluk"],
-                ["Mücbir Sebep", "#mucbir"],
-                ["Gizlilik", "#kvkk"],
-                ["Üçüncü Taraflar", "#baglantilar"],
-                ["Değişiklikler", "#degisiklikler"],
-                ["Hukuk & Yetki", "#hukuk"],
-                ["İletişim", "#iletisim"],
-              ].map(([t, href], i) => (
-                <li key={href} className="group">
-                  <a
-                    href={href}
-                    className="
-                      flex items-center gap-3 py-3 px-5 rounded-2xl
-                      bg-white/70 hover:bg-white shadow-md hover:shadow-xl
-                      border border-slate-200 hover:border-slate-300
-                      transition-all duration-300 group-hover:-translate-y-1
-                    "
-                  >
-                    <span className="w-9 h-9 rounded-full bg-slate-600 text-white flex items-center justify-center text-sm font-bold">
-                      {i + 1}
-                    </span>
-                    <span className="font-medium text-slate-700 group-hover:text-slate-900">
-                      {t}
-                    </span>
-                  </a>
-                </li>
-              ))}
-            </ul>
           </div>
-        </nav>
+        </div>
 
-        {/* BÖLÜMLER */}
-        <article className="space-y-16">
-
-          {/* 1. Kapsam */}
-          <section id="kapsam">
-            <h2 className="text-2xl font-bold text-slate-900 mb-5 flex items-center gap-3">
-              <Badge>1</Badge>
-              Tanımlar ve Kapsam
-            </h2>
-            <Card>
-              <p className="text-slate-700 leading-relaxed">
-                Bu <strong>Şartlar</strong>, <strong>{ORG.name}</strong>’a ait internet sitesinin kullanımını ve formlar aracılığıyla iletilen taleplerin temel kurallarını düzenler.
-              </p>
-              <Highlight>Üyelik yoktur. Sadece form = talep.</Highlight>
-            </Card>
-          </section>
-
-          {/* 2. Site Kullanımı */}
-          <section id="kullanim">
-            <h2 className="text-2xl font-bold text-slate-900 mb-5 flex items-center gap-3">
-              <Badge>2</Badge>
-              Site Kullanımı
-            </h2>
-            <div className="grid md:grid-cols-2 gap-5">
-              {[
-                "Bilgiler genel amaçlıdır",
-                "Doğru bilgi sizin sorumluluğunuz",
-                "Kesintisiz çalışma garantisi yok",
-                "Yasaklı içerik göndermek yasak",
-              ].map((item, i) => (
-                <RuleCard key={i} number={i + 1}>
-                  {item}
-                </RuleCard>
-              ))}
-            </div>
-          </section>
-
-          {/* 3. Teklif & Sözleşme */}
-          <section id="teklif">
-            <h2 className="text-2xl font-bold text-slate-900 mb-5 flex items-center gap-3">
-              <Badge>3</Badge>
-              Teklif, Sözleşme ve Uygulama
-            </h2>
-            <Timeline>
-              <Step title="Form = Talep" desc="Bağlayıcı değildir" />
-              <Step title="Keşif & Analiz" desc="İhtiyaçlar netleşir" />
-              <Step title="Yazılı Teklif" desc="Fiyat + kapsam + süre" />
-              <Step title="İmzalı Sözleşme" desc="İş başlar" />
-            </Timeline>
-          </section>
-
-          {/* 4. Ödeme */}
-          <section id="odeme">
-            <h2 className="text-2xl font-bold text-slate-900 mb-5 flex items-center gap-3">
-              <Badge>4</Badge>
-              Ücret, Ödeme ve Faturalama
-            </h2>
-            <Card>
+        <div className="grid lg:grid-cols-12 gap-16">
+          
+          {/* LEFT: Sticky Navigation */}
+          <aside className="lg:col-span-4 lg:sticky lg:top-32 h-fit">
+            <motion.nav 
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              className="bg-slate-50 p-8 rounded-[2.5rem] border border-slate-100"
+            >
+              <h3 className="text-slate-900 font-black uppercase italic tracking-tighter text-xl mb-6">İçindekiler</h3>
               <ul className="space-y-3">
-                {["KDV dahil fiyatlar", "Sözleşmede ödeme takvimi", "Gecikme faizi uygulanır", "Ek iş = ek bedel"].map((item) => (
-                  <li key={item} className="flex items-start gap-3">
-                    <Check />
-                    <span className="text-slate-700">{item}</span>
+                {[
+                  { t: "Kapsam", h: "#kapsam" },
+                  { t: "Site Kullanımı", h: "#kullanim" },
+                  { t: "Teklif & Sözleşme", h: "#teklif" },
+                  { t: "Fikri Mülkiyet", h: "#fikri" },
+                  { t: "Gizlilik & Hukuk", h: "#hukuk" },
+                ].map((item, i) => (
+                  <li key={i}>
+                    <a 
+                      href={item.h} 
+                      className="group flex items-center justify-between text-slate-500 hover:text-orange-500 transition-colors py-2 font-bold uppercase tracking-widest text-[10px]"
+                    >
+                      <span>0{i + 1}. {item.t}</span>
+                      <div className="h-[1px] w-0 group-hover:w-8 bg-orange-500 transition-all" />
+                    </a>
                   </li>
                 ))}
               </ul>
-            </Card>
-          </section>
+            </motion.nav>
+          </aside>
 
-          {/* 5–13 Kısa Kartlar */}
-          <div className="grid md:grid-cols-2 gap-8">
+          {/* RIGHT: Content Sections */}
+          <div className="lg:col-span-8 space-y-32">
+            
+            {/* 1. Kapsam */}
+            <motion.section id="kapsam" {...itemVariants} whileInView="whileInView" initial="initial" viewport={{ once: true }}>
+              <div className="flex items-center gap-4 mb-8">
+                <div className="w-12 h-12 bg-slate-900 rounded-2xl flex items-center justify-center text-white italic font-black">01</div>
+                <h2 className="text-3xl font-black uppercase italic tracking-tighter text-slate-900">Kapsam ve Tanımlar</h2>
+              </div>
+              <div className="prose prose-slate max-w-none text-slate-600 font-medium leading-loose">
+                <p>
+                  Bu şartlar, <strong>{ORG.name}</strong> dijital varlıklarının kullanımını ve hizmet taleplerinizin yasal çerçevesini belirler. Sitemizi kullanarak, bu koşulları peşinen kabul etmiş sayılırsınız.
+                </p>
+                <div className="mt-8 p-8 bg-slate-50 rounded-[2rem] border-l-4 border-orange-500 italic">
+                  "CBO Yapı, dijital platformu üzerinden sadece bilgilendirme ve ön talep toplama hizmeti sunar."
+                </div>
+              </div>
+            </motion.section>
 
-            <ShortSection id="fikri" num="5" title="Fikri Mülkiyet">
-              Logo, görsel, çizim → <strong>{ORG.name}’a aittir</strong>. Yazılı izin olmadan kullanılamaz.
-            </ShortSection>
+            {/* 2. Site Kullanımı */}
+            <motion.section id="kullanim" {...itemVariants} whileInView="whileInView" initial="initial" viewport={{ once: true }}>
+              <div className="flex items-center gap-4 mb-12">
+                <div className="w-12 h-12 bg-slate-900 rounded-2xl flex items-center justify-center text-white italic font-black">02</div>
+                <h2 className="text-3xl font-black uppercase italic tracking-tighter text-slate-900">Kullanım Kuralları</h2>
+              </div>
+              <div className="grid md:grid-cols-2 gap-6">
+                {[
+                  { icon: Globe, t: "Global Erişim", d: "Sitedeki içerikler genel bilgilendirme amaçlıdır." },
+                  { icon: ShieldCheck, t: "Veri Güvenliği", d: "Hatalı veya yanıltıcı bilgi girişi kullanıcı sorumluluğundadır." },
+                  { icon: FileText, t: "Dokümantasyon", d: "Sitedeki görseller ve metinler teklif niteliği taşımaz." },
+                  { icon: Scale, t: "Yasal Uyumluluk", d: "Siber saldırı veya kötüye kullanım yasal takibe tabidir." }
+                ].map((rule, idx) => (
+                  <div key={idx} className="p-8 border border-slate-100 rounded-[2rem] hover:bg-slate-50 transition-colors group">
+                    <rule.icon className="text-orange-500 mb-6 group-hover:scale-110 transition-transform" size={24} />
+                    <h4 className="text-slate-900 font-black uppercase tracking-widest text-xs mb-3">{rule.t}</h4>
+                    <p className="text-slate-500 text-sm leading-relaxed">{rule.d}</p>
+                  </div>
+                ))}
+              </div>
+            </motion.section>
 
-            <ShortSection id="garanti" num="6" title="Garanti Reddi">
-              Site “olduğu gibi”. Bağlayıcı bilgi sadece <strong>yazılı sözleşmede</strong>.
-            </ShortSection>
+            {/* 3. Teklif Süreci */}
+            <motion.section id="teklif" {...itemVariants} whileInView="whileInView" initial="initial" viewport={{ once: true }}>
+              <div className="flex items-center gap-4 mb-12">
+                <div className="w-12 h-12 bg-slate-900 rounded-2xl flex items-center justify-center text-white italic font-black">03</div>
+                <h2 className="text-3xl font-black uppercase italic tracking-tighter text-slate-900">Süreç ve Sözleşme</h2>
+              </div>
+              <div className="relative space-y-12 before:absolute before:left-[23px] before:top-0 before:h-full before:w-[1px] before:bg-slate-100">
+                {[
+                  { t: "Dijital Talep", d: "Web sitesi üzerinden gönderilen formlar bağlayıcı bir sözleşme değildir." },
+                  { t: "Resmi Teklif", d: "Keşif sonrası hazırlanan ıslak imzalı veya resmi e-postalı dokümanlar geçerlidir." },
+                  { t: "Uygulama", d: "İş başlangıcı, karşılıklı imzalanan hizmet sözleşmesi ile resmiyet kazanır." }
+                ].map((step, idx) => (
+                  <div key={idx} className="relative pl-16">
+                    <div className="absolute left-0 top-0 w-12 h-12 bg-white border border-slate-200 rounded-full flex items-center justify-center z-10">
+                      <div className="w-2 h-2 bg-orange-500 rounded-full" />
+                    </div>
+                    <h4 className="text-slate-900 font-black uppercase tracking-widest text-xs mb-2">{step.t}</h4>
+                    <p className="text-slate-500 text-sm leading-relaxed">{step.d}</p>
+                  </div>
+                ))}
+              </div>
+            </motion.section>
 
-            <ShortSection id="sorumluluk" num="7" title="Sorumluluğun Sınırlandırılması">
-              Dolaylı zararlar kapsam dışı. Sözleşme hükümleri geçerlidir.
-            </ShortSection>
+            {/* Fikri Mülkiyet & Hukuk Mini Kartlar */}
+            <div className="grid md:grid-cols-2 gap-8">
+              <motion.div id="fikri" {...itemVariants} className="p-10 bg-slate-900 rounded-[3rem] text-white">
+                <h3 className="text-orange-500 font-black uppercase tracking-widest text-[10px] mb-6">Mülkiyet Hakkı</h3>
+                <p className="text-slate-400 text-sm leading-loose">
+                  Tüm projeler, çizimler ve görsel materyaller <strong>CBO Yapı</strong> telif hakları altındadır. İzinsiz kopyalanamaz.
+                </p>
+              </motion.div>
+              <motion.div id="hukuk" {...itemVariants} className="p-10 bg-slate-50 rounded-[3rem] border border-slate-100">
+                <h3 className="text-slate-900 font-black uppercase tracking-widest text-[10px] mb-6">Yetkili Mahkemeler</h3>
+                <p className="text-slate-500 text-sm leading-loose">
+                  Anlaşmazlık durumunda <strong>Tekirdağ / Kapaklı</strong> Mahkemeleri ve İcra Daireleri yetkilidir.
+                </p>
+              </motion.div>
+            </div>
 
-            <ShortSection id="mucbir" num="8" title="Mücbir Sebep">
-              Deprem, savaş, siber saldırı → yükümlülükler askıya alınır.
-            </ShortSection>
-
-            <ShortSection id="kvkk" num="9" title="Gizlilik ve KVKK">
-              <Link href="/kvkk" className="underline font-medium">KVKK Metni</Link> ve{" "}
-              <Link href="/gizlilik-politikasi" className="underline font-medium">Gizlilik</Link> geçerlidir.
-            </ShortSection>
-
-            <ShortSection id="baglantilar" num="10" title="Üçüncü Taraflar">
-              Firebase, Google Maps → onların politikaları geçerli.
-            </ShortSection>
-
-            <ShortSection id="degisiklikler" num="11" title="Değişiklikler">
-              Güncellemeler bu sayfada. Kullanım = kabul.
-            </ShortSection>
-
-            <ShortSection id="hukuk" num="12" title="Uygulanacak Hukuk">
-              Türkiye hukuku · Tekirdağ (Kapaklı) mahkemeleri yetkili.
-            </ShortSection>
+            {/* İletişim Footer */}
+            <motion.div 
+              {...itemVariants}
+              className="pt-20 border-t border-slate-100 flex flex-col md:flex-row justify-between items-start gap-12"
+            >
+              <div>
+                <h4 className="text-slate-900 font-black uppercase italic tracking-tighter text-2xl mb-4">Sorularınız İçin</h4>
+                <p className="text-slate-500 text-sm max-w-xs">Şartlar hakkında detaylı bilgi almak için hukuk departmanımızla iletişime geçebilirsiniz.</p>
+              </div>
+              <div className="flex flex-col gap-4">
+                <a href="mailto:info@cboyapi.com" className="group flex items-center gap-4 text-slate-900 font-black uppercase tracking-widest text-xs">
+                  <div className="w-10 h-10 bg-slate-50 rounded-full flex items-center justify-center group-hover:bg-orange-500 group-hover:text-white transition-all">
+                    <Mail size={16} />
+                  </div>
+                  info@cboyapi.com
+                </a>
+              </div>
+            </motion.div>
 
           </div>
-
-          {/* 13. İletişim */}
-          <section id="iletisim">
-            <h2 className="text-2xl font-bold text-slate-900 mb-5 flex items-center gap-3">
-              <Badge>13</Badge>
-              İletişim
-            </h2>
-            <div className="bg-white rounded-3xl shadow-xl border border-slate-100 p-8">
-              <div className="grid sm:grid-cols-2 gap-6">
-                <ContactItem icon="building" label="Ticari Unvan">{ORG.name}</ContactItem>
-                <ContactItem icon="map-pin" label="Adres">{ORG.address}</ContactItem>
-                <ContactItem icon="phone" label="Telefon">
-                  <a href={`tel:${ORG.phone.replace(/\s/g, "")}`} className="hover:underline">{ORG.phone}</a>
-                </ContactItem>
-                <ContactItem icon="mail" label="E-posta">
-                  <a href={`mailto:${ORG.email}`} className="hover:underline">{ORG.email}</a>
-                </ContactItem>
-              </div>
-            </div>
-          </section>
-        </article>
-
-        {/* CTA */}
-        <div className="mt-20 text-center">
-          <Link
-            href="/iletisim"
-            className="
-              group inline-flex items-center gap-4 px-8 py-5 rounded-2xl
-              bg-gradient-to-r from-slate-600 to-slate-700 text-white font-bold text-lg
-              hover:from-slate-700 hover:to-slate-800
-              shadow-2xl hover:shadow-3xl hover:-translate-y-1
-              transition-all duration-300
-            "
-          >
-            Sorunuz mu var? Hemen Ulaşın
-            <svg className="w-6 h-6 transition group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-            </svg>
-          </Link>
         </div>
       </div>
     </main>
-  );
-}
-
-/* Yardımcı Bileşenler */
-function Badge({ children }: { children: React.ReactNode }) {
-  return (
-    <span className="w-10 h-10 rounded-full bg-slate-100 text-slate-600 flex items-center justify-center font-bold text-sm">
-      {children}
-    </span>
-  );
-}
-
-function Card({ children }: { children: React.ReactNode }) {
-  return (
-    <div className="bg-gradient-to-r from-slate-50 to-white rounded-2xl p-7 border border-slate-200 shadow-md">
-      {children}
-    </div>
-  );
-}
-
-function Highlight({ children }: { children: React.ReactNode }) {
-  return (
-    <div className="mt-4 p-4 bg-emerald-50 border border-emerald-200 rounded-xl text-emerald-700 font-medium text-sm">
-      {children}
-    </div>
-  );
-}
-
-function RuleCard({ number, children }: { number: number; children: React.ReactNode }) {
-  return (
-    <div className="bg-white rounded-2xl p-5 border border-slate-200 shadow hover:shadow-lg transition">
-      <div className="flex items-start gap-3">
-        <div className="w-8 h-8 rounded-full bg-slate-600 text-white flex items-center justify-center text-xs font-bold">
-          {number}
-        </div>
-        <p className="text-slate-700 text-sm">{children}</p>
-      </div>
-    </div>
-  );
-}
-
-function Timeline({ children }: { children: React.ReactNode }) {
-  return (
-    <div className="space-y-6">
-      {children}
-    </div>
-  );
-}
-
-function Step({ title, desc }: { title: string; desc: string }) {
-  return (
-    <div className="flex gap-4">
-      <div className="w-10 h-10 rounded-full bg-slate-600 text-white flex items-center justify-center text-sm font-bold">
-        →
-      </div>
-      <div>
-        <p className="font-semibold text-slate-800">{title}</p>
-        <p className="text-sm text-slate-600">{desc}</p>
-      </div>
-    </div>
-  );
-}
-
-function Check() {
-  return (
-    <svg className="w-5 h-5 text-emerald-600 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
-    </svg>
-  );
-}
-
-function ShortSection({ id, num, title, children }: { id: string; num: string; title: string; children: React.ReactNode }) {
-  return (
-    <section id={id}>
-      <h2 className="text-xl font-bold text-slate-900 mb-4 flex items-center gap-3">
-        <Badge>{num}</Badge>
-        {title}
-      </h2>
-      <Card>
-        <div className="text-slate-700 text-sm leading-relaxed" dangerouslySetInnerHTML={{ __html: children as string }} />
-      </Card>
-    </section>
-  );
-}
-
-function ContactItem({ icon, label, children }: { icon: string; label: string; children: React.ReactNode }) {
-  const icons: Record<string, JSX.Element> = {
-    building: <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h-4m-6 0H5" /></svg>,
-    "map-pin": <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" /></svg>,
-    phone: <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" /></svg>,
-    mail: <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>,
-  };
-  return (
-    <div className="flex items-start gap-3 bg-slate-50 rounded-xl p-4 border border-slate-200">
-      <div className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center text-slate-600">
-        {icons[icon]}
-      </div>
-      <div>
-        <p className="text-xs font-bold text-slate-900 uppercase tracking-wider">{label}</p>
-        <div className="mt-1 text-sm text-slate-700">{children}</div>
-      </div>
-    </div>
   );
 }

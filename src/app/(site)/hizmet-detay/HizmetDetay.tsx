@@ -1,349 +1,199 @@
-// File: app/hizmet-detay/HizmetDetay.tsx
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { motion, AnimatePresence } from "framer-motion";
 import { db } from "@/firebase/config";
-import {
-    doc,
-    getDoc,
-    collection,
-    getDocs,
-    query,
-    where,
-    orderBy,
-    Timestamp,
-} from "firebase/firestore";
+import { doc, getDoc, collection, getDocs, query, where, orderBy } from "firebase/firestore";
+import { ArrowRight, Box, CheckCircle2, LayoutGrid, Clock } from "lucide-react";
 
-type Service = {
-    id: string;
-    name: string;
-    description: string;
-    slug?: string;
-    imageUrl?: string;
-    createdAt?: Timestamp | null;
-};
-
-type Project = {
-    id: string;
-    name?: string;
-    title?: string;
-    description?: string;
-    status?: "ongoing" | "completed";
-    serviceId?: string;
-    serviceSlug?: string;
-    images?: string[];
-    coverUrl?: string;
-    location?: string;
-    startedAt?: Timestamp | null;
-    finishedAt?: Timestamp | null;
-    createdAt?: Timestamp | null;
-};
-
-type Props = {
-    serviceId: string;
-};
-
-export default function HizmetDetay({ serviceId }: Props) {
-    const [service, setService] = useState<Service | null>(null);
-    const [projects, setProjects] = useState<Project[] | null>(null);
+export default function HizmetDetay({ serviceId }: { serviceId: string }) {
+    const [service, setService] = useState<any | null>(null);
+    const [projects, setProjects] = useState<any[] | null>(null);
     const [tab, setTab] = useState<"all" | "ongoing" | "completed">("all");
     const [error, setError] = useState<string | null>(null);
 
-    const filtered = useMemo(() => {
-        if (!projects) return null;
-        if (tab === "all") return projects;
-        return projects.filter((p) => p.status === (tab === "ongoing" ? "ongoing" : "completed"));
-    }, [projects, tab]);
-
     useEffect(() => {
-        let cancelled = false;
-
         async function run() {
-            setError(null);
-            setService(null);
-            setProjects(null);
-
             try {
-                // 1) Hizmet
                 const ref = doc(db, "services", serviceId);
                 const snap = await getDoc(ref);
-                if (!snap.exists()) {
-                    if (!cancelled) setError("Hizmet kaydı bulunamadı.");
-                    return;
-                }
-                const sdata = snap.data() as any;
-                const svc: Service = {
-                    id: snap.id,
-                    name: sdata.name,
-                    description: sdata.description,
-                    slug: sdata.slug,
-                    imageUrl: sdata.imageUrl,
-                    createdAt: sdata.createdAt ?? null,
-                };
-                if (!cancelled) setService(svc);
+                if (!snap.exists()) { setError("Hizmet bulunamadı."); return; }
+                const sdata = snap.id ? { id: snap.id, ...snap.data() } : null;
+                setService(sdata);
 
-                // 2) Projeler: önce serviceId
-                const q1 = query(
+                const q = query(
                     collection(db, "projects"),
                     where("serviceId", "==", serviceId),
                     orderBy("createdAt", "desc")
                 );
-                const r1 = await getDocs(q1);
-                let list: Project[] = r1.docs.map((d) => {
-                    const x = d.data() as any;
-                    return {
-                        id: d.id,
-                        name: x.name || x.title,
-                        title: x.title,
-                        description: x.description,
-                        status: x.status,
-                        serviceId: x.serviceId,
-                        serviceSlug: x.serviceSlug,
-                        images: x.images || [],
-                        coverUrl: x.coverUrl,
-                        location: x.location,
-                        startedAt: x.startedAt ?? null,
-                        finishedAt: x.finishedAt ?? null,
-                        createdAt: x.createdAt ?? null,
-                    };
-                });
-
-                // 3) Hiç çıkmazsa slug ile dene
-                if (list.length === 0 && svc.slug) {
-                    const q2 = query(
-                        collection(db, "projects"),
-                        where("serviceSlug", "==", svc.slug),
-                        orderBy("createdAt", "desc")
-                    );
-                    const r2 = await getDocs(q2);
-                    list = r2.docs.map((d) => {
-                        const x = d.data() as any;
-                        return {
-                            id: d.id,
-                            name: x.name || x.title,
-                            title: x.title,
-                            description: x.description,
-                            status: x.status,
-                            serviceId: x.serviceId,
-                            serviceSlug: x.serviceSlug,
-                            images: x.images || [],
-                            coverUrl: x.coverUrl,
-                            location: x.location,
-                            startedAt: x.startedAt ?? null,
-                            finishedAt: x.finishedAt ?? null,
-                            createdAt: x.createdAt ?? null,
-                        };
-                    });
-                }
-
-                if (!cancelled) setProjects(list);
-            } catch (e: any) {
+                const rs = await getDocs(q);
+                setProjects(rs.docs.map(d => ({ id: d.id, ...d.data() })));
+            } catch (e) {
                 console.error(e);
-                if (!cancelled) setError("Veriler alınırken bir hata oluştu.");
+                setError("Veriler yüklenirken bir hata oluştu.");
             }
         }
-
         run();
-        return () => {
-            cancelled = true;
-        };
     }, [serviceId]);
 
+    const filtered = useMemo(() => {
+        if (!projects) return null;
+        if (tab === "all") return projects;
+        return projects.filter((p) => p.status === tab);
+    }, [projects, tab]);
+
+    if (error) return <div className="min-h-screen grid place-items-center text-red-500 font-bold">{error}</div>;
+    if (!service) return <div className="min-h-screen grid place-items-center animate-pulse font-black text-slate-200">HİZMET YÜKLENİYOR...</div>;
+
     return (
-        <main className="min-h-screen bg-white mt-20">
-            <div className="max-w-7xl mx-auto px-6 py-10">
-                {/* Üst başlık alanı — loading */}
-                {!service && !error && (
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-center">
-                        <div className="relative h-64 rounded-2xl bg-gray-100 animate-pulse" />
-                        <div className="animate-pulse">
-                            <div className="h-8 w-64 bg-gray-200 rounded" />
-                            <div className="mt-3 h-4 w-96 bg-gray-200 rounded" />
-                            <div className="mt-2 h-4 w-80 bg-gray-200 rounded" />
-                            <div className="mt-2 h-4 w-72 bg-gray-200 rounded" />
+        <main className="min-h-screen bg-white pt-32 pb-20">
+            <div className="max-w-[1400px] mx-auto px-6">
+                
+                {/* HEADER: Mimari Manifesto Stili */}
+                <header className="grid lg:grid-cols-12 gap-16 items-start mb-32">
+                    <motion.div 
+                        initial={{ opacity: 0, x: -50 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        className="lg:col-span-8"
+                    >
+                 
+                        <h1 className="text-[10vw] lg:text-[100px] font-black leading-[0.85] tracking-tighter uppercase italic text-slate-900 mb-10">
+                            {service.name}
+                        </h1>
+                        <div className="max-w-2xl text-xl text-slate-500 font-medium leading-relaxed">
+                            {service.description}
                         </div>
-                    </div>
-                )}
+                    </motion.div>
 
-                {error && (
-                    <div className="rounded-xl border border-red-200 bg-red-50 p-4 text-red-700">
-                        {error}
-                    </div>
-                )}
+                    <motion.div 
+                        initial={{ opacity: 0, scale: 0.9 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        className="lg:col-span-4 relative h-[450px] overflow-hidden rounded-[3rem] shadow-2xl"
+                    >
+                        <Image 
+                            src={service.imageUrl || "/placeholder.jpg"} 
+                            alt={service.name} 
+                            fill 
+                            className="object-cover" 
+                            priority
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-slate-950/40 to-transparent" />
+                        <div className="absolute bottom-10 left-10 text-white font-black uppercase italic text-2xl tracking-tighter">
+                            CBO <br /> EXPERTISE
+                        </div>
+                    </motion.div>
+                </header>
 
-                {/* Üst başlık alanı — tasarım */}
-                {service && (
-                    <>
-                        <section className="rounded-2xl border border-gray-100 shadow-sm bg-gradient-to-br from-white to-slate-50 p-4 md:p-6">
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8 items-stretch">
-                                {/* Sol: Görsel */}
-                                <div className="relative">
-                                    <div className="relative h-64 md:h-full min-h-[260px] w-full overflow-hidden rounded-xl ring-2 ring-slate-200 shadow-lg">
-                                        <Image
-                                            src={service.imageUrl || "/placeholder.jpg"}
-                                            alt={service.name || "Hizmet görseli"}
-                                            fill
-                                            className="object-cover transition-transform duration-500 hover:scale-105"
-                                            sizes="(max-width: 1024px) 100vw, 600px"
-                                        />
-                                    </div>
-                                </div>
+                {/* PROJELER SECTION */}
+                <section>
+                    <div className="flex flex-col md:flex-row md:items-end justify-between mb-16 gap-8">
+                        <div>
+                            <h2 className="text-4xl font-black uppercase italic tracking-tighter text-slate-900">Uygulamalarımız</h2>
+                            <div className="mt-2 h-[2px] w-20 bg-orange-500" />
+                        </div>
 
-                                {/* Sağ: İçerik paneli */}
-                                <div className="flex flex-col justify-center">
-                                    <h1 className="text-3xl md:text-4xl font-extrabold leading-tight">
-                                        <span className="bg-gradient-to-r from-slate-600 to-slate-300 bg-clip-text text-transparent">
-                                            {service.name}
-                                        </span>
-                                    </h1>
-
-                                    {/* Açıklama */}
-                                    <div className="mt-5 text-gray-700 leading-relaxed space-y-3">
-                                        {service.description?.split("\n").map((p, i) => (
-                                            <p key={i} className="text-[15px] md:text-base">
-                                                {p.trim()}
-                                            </p>
-                                        ))}
-                                    </div>
-                                </div>
-                            </div>
-                        </section>
-
-                        {/* Sekmeler */}
-                        <div className="mt-10 flex items-center justify-center gap-3 flex-wrap">
+                        {/* Filtre Sekmeleri */}
+                        <div className="flex bg-slate-50 p-1.5 rounded-2xl border border-slate-100">
                             {[
-                                { key: "all", label: "Tümü" },
-                                { key: "ongoing", label: "Devam Eden" },
-                                { key: "completed", label: "Bitmiş" },
+                                { k: "all", l: "HEPSİ" },
+                                { k: "ongoing", l: "DEVAM EDEN" },
+                                { k: "completed", l: "TAMAMLANAN" }
                             ].map((t) => (
                                 <button
-                                    key={t.key}
-                                    onClick={() => setTab(t.key as any)}
-                                    className={`px-5 py-2.5 rounded-xl text-sm font-semibold border transition-all duration-200 ${
-                                        tab === t.key
-                                            ? "bg-slate-600 text-white border-slate-600 shadow-md"
-                                            : "bg-white text-slate-700 border-slate-200 hover:bg-slate-50 hover:border-slate-300"
-                                    }`}
+                                    key={t.k}
+                                    onClick={() => setTab(t.k as any)}
+                                    className={`px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all
+                                        ${tab === t.k ? "bg-slate-900 text-white shadow-lg" : "text-slate-400 hover:text-slate-600"}`}
                                 >
-                                    {t.label}
+                                    {t.l}
                                 </button>
                             ))}
                         </div>
+                    </div>
 
-                        {/* Proje listesi */}
-                        <section id="projeler" className="mt-10">
-                            {projects === null && (
-                                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                                    {[...Array(6)].map((_, i) => (
-                                        <div key={i} className="animate-pulse rounded-2xl bg-white p-4 shadow-md border border-gray-100">
-                                            <div className="h-48 w-full rounded-xl bg-gray-200" />
-                                            <div className="mt-4 h-5 w-3/4 bg-gray-200 rounded" />
-                                            <div className="mt-2 h-4 w-full bg-gray-200 rounded" />
-                                        </div>
-                                    ))}
-                                </div>
-                            )}
+                    {/* Proje Grid */}
+                    <motion.div layout className="grid grid-cols-1 md:grid-cols-12 gap-8">
+                        <AnimatePresence mode="popLayout">
+                            {filtered?.map((p, idx) => (
+                                <ServiceProjectCard key={p.id} project={p} index={idx} />
+                            ))}
+                        </AnimatePresence>
+                    </motion.div>
 
-                            {projects && projects.length === 0 && (
-                                <div className="rounded-xl border border-dashed border-slate-200 p-10 text-center text-slate-600 bg-slate-50">
-                                    <p className="text-lg">Bu hizmete bağlı proje bulunmuyor.</p>
-                                </div>
-                            )}
+                    {filtered?.length === 0 && (
+                        <div className="py-24 text-center border-2 border-dashed border-slate-100 rounded-[3rem]">
+                            <p className="text-2xl font-black uppercase italic text-slate-200">Bu kategoride henüz proje yok.</p>
+                        </div>
+                    )}
+                </section>
 
-                            {filtered && filtered.length > 0 && (
-                                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                                    {filtered.map((p) => {
-                                        const title = p.name || p.title || "Proje";
-                                        const cover =
-                                            (p.images && p.images[0]) ||
-                                            p.coverUrl ||
-                                            "/placeholder.jpg";
+                {/* BOTTOM CTA */}
+                <motion.div 
+                    initial={{ opacity: 0, y: 30 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    className="mt-32 p-12 md:p-20 bg-slate-900 rounded-[4rem] text-center relative overflow-hidden"
+                >
+                    <div className="absolute top-0 left-0 w-full h-full opacity-5 pointer-events-none select-none">
+                         <span className="text-[20vw] font-black italic text-white uppercase leading-none">QUOTE</span>
+                    </div>
+                    <h3 className="text-4xl md:text-7xl font-black text-white uppercase italic tracking-tighter mb-10 relative z-10">
+                        HAYALİNİZDEKİ PROJE <br /> İÇİN <span className="text-orange-500">TEKLİF ALIN</span>
+                    </h3>
+                    <Link 
+                        href="/teklif-al" 
+                        className="relative z-10 inline-flex items-center gap-4 px-12 py-6 bg-white text-slate-900 rounded-full font-black uppercase tracking-widest text-xs hover:bg-orange-500 hover:text-white transition-all duration-500 group"
+                    >
+                        SÜRECİ BAŞLATALIM <ArrowRight size={16} className="group-hover:translate-x-2 transition-transform" />
+                    </Link>
+                </motion.div>
 
-                                        return (
-                                            <Link
-                                                key={p.id}
-                                                href={{ pathname: "/proje-detay", query: { id: p.id } }}
-                                                className="
-                                                    group block focus:outline-none
-                                                    rounded-2xl bg-white shadow-lg border border-gray-100
-                                                    transition-all duration-300
-                                                    hover:-translate-y-1 hover:shadow-2xl
-                                                    overflow-hidden
-                                                "
-                                            >
-                                                <div className="relative h-48 w-full">
-                                                    <Image
-                                                        src={cover}
-                                                        alt={title}
-                                                        fill
-                                                        className="object-cover transition-transform duration-300 group-hover:scale-[1.03]"
-                                                        sizes="(max-width: 1024px) 100vw, 33vw"
-                                                    />
-                                                    {p.status && (
-                                                        <span
-                                                            className={`absolute top-3 right-3 text-xs px-2.5 py-1 rounded-full border font-medium ${
-                                                                p.status === "ongoing"
-                                                                    ? "bg-amber-100 text-amber-800 border-amber-300"
-                                                                    : "bg-emerald-100 text-emerald-800 border-emerald-300"
-                                                            }`}
-                                                        >
-                                                            {p.status === "ongoing" ? "Devam" : "Tamamlandı"}
-                                                        </span>
-                                                    )}
-                                                </div>
-
-                                                <div className="p-5">
-                                                    <h3 className="font-bold text-lg text-gray-900 line-clamp-2">
-                                                        {title}
-                                                    </h3>
-                                                    {p.location && (
-                                                        <p className="mt-1 text-sm text-slate-600 flex items-center gap-1">
-                                                            <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                                                                <path d="M12 22s7-5.33 7-12A7 7 0 105 10c0 6.67 7 12 7 12z" />
-                                                                <circle cx="12" cy="10" r="3" />
-                                                            </svg>
-                                                            {p.location}
-                                                        </p>
-                                                    )}
-                                                    {p.description && (
-                                                        <p className="mt-3 text-sm text-gray-600 line-clamp-3">
-                                                            {p.description}
-                                                        </p>
-                                                    )}
-                                                </div>
-
-                                                <div className="px-5 pb-4">
-                                                    <span
-                                                        className="
-                                                            inline-flex items-center text-sm font-medium text-slate-600
-                                                            opacity-0 translate-y-1 group-hover:opacity-100 group-hover:translate-y-0
-                                                            transition-all duration-300
-                                                        "
-                                                    >
-                                                        Projeyi İncele
-                                                        <svg
-                                                            className="ml-1.5 w-4 h-4 transition-transform group-hover:translate-x-0.5"
-                                                            viewBox="0 0 24 24"
-                                                            fill="none"
-                                                            stroke="currentColor"
-                                                            strokeWidth="2"
-                                                        >
-                                                            <path d="M5 12h14" />
-                                                            <path d="M12 5l7 7-7 7" />
-                                                        </svg>
-                                                    </span>
-                                                </div>
-                                            </Link>
-                                        );
-                                    })}
-                                </div>
-                            )}
-                        </section>
-                    </>
-                )}
             </div>
         </main>
+    );
+}
+
+function ServiceProjectCard({ project, index }: { project: any, index: number }) {
+    const isWide = index % 3 === 0;
+    const cover = project.coverUrl || project.images?.[0] || "/placeholder.jpg";
+
+    return (
+        <motion.div
+            layout
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.9 }}
+            transition={{ duration: 0.5 }}
+            className={`${isWide ? "md:col-span-8" : "md:col-span-4"} group relative h-[450px] overflow-hidden rounded-[2.5rem] bg-slate-100`}
+        >
+            <Link href={{ pathname: "/proje-detay", query: { id: project.id } }}>
+                <Image 
+                    src={cover} 
+                    alt={project.name} 
+                    fill 
+                    className="object-cover grayscale group-hover:grayscale-0 transition-all duration-1000 group-hover:scale-110" 
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-transparent to-transparent opacity-60" />
+                
+                <div className="absolute inset-0 p-10 flex flex-col justify-end">
+                    <div className="flex items-center gap-3 mb-4">
+                        {project.status === "ongoing" ? 
+                            <Clock className="text-orange-500" size={16} /> : 
+                            <CheckCircle2 className="text-emerald-500" size={16} />
+                        }
+                        <span className="text-white font-black uppercase tracking-widest text-[10px]">
+                            {project.status === "ongoing" ? "DEVAM EDİYOR" : "TAMAMLANDI"}
+                        </span>
+                    </div>
+                    <h4 className="text-white text-3xl md:text-4xl font-black uppercase italic tracking-tighter leading-none group-hover:text-orange-500 transition-colors">
+                        {project.name}
+                    </h4>
+                    <p className="text-slate-300 text-xs font-bold uppercase tracking-widest mt-4 opacity-0 group-hover:opacity-100 transition-opacity">
+                        PROJEYİ İNCELE —&gt;
+                    </p>
+                </div>
+            </Link>
+        </motion.div>
     );
 }
