@@ -28,6 +28,11 @@ import {
   ref as refFromURL,
 } from "firebase/storage";
 
+// ✅ react-quill-new
+import dynamic from "next/dynamic";
+import "react-quill-new/dist/quill.snow.css";
+const ReactQuill = dynamic(() => import("react-quill-new"), { ssr: false });
+
 type ServiceDoc = {
   id: string;
   name: string;
@@ -36,28 +41,28 @@ type ServiceDoc = {
 
 type ProjectForm = {
   title: string;
-  description: string;
+  description: string; // ✅ HTML (Quill)
   status: "finished" | "ongoing";
   serviceId: string;
   client?: string;
   location?: string;
   startDate?: string;
   endDate?: string;
-  images: File[]; // sadece YENİ eklenecek dosyalar
+  images: File[]; // sadece YENİ eklenecek medya dosyaları (görsel/video)
 };
 
 type ProjectDoc = {
   id: string;
   title: string;
   slug: string;
-  description: string;
+  description: string; // ✅ HTML (Quill)
   status: "finished" | "ongoing";
   serviceId: string;
   client?: string | null;
   location?: string | null;
   startDate?: string | null;
   endDate?: string | null;
-  images: string[]; // tüm mevcut URL’ler
+  images: string[]; // tüm mevcut URL’ler (görsel/video)
   coverImageUrl?: string;
   createdAt?: Timestamp | null;
   updatedAt?: Timestamp | null;
@@ -77,6 +82,25 @@ function slugify(input: string) {
     .replace(/^-+|-+$/g, "");
 }
 
+// ✅ Quill HTML -> plain text validation
+function stripHtml(html: string) {
+  return html
+    .replace(/<style[^>]*>[\s\S]*?<\/style>/gi, "")
+    .replace(/<script[^>]*>[\s\S]*?<\/script>/gi, "")
+    .replace(/<\/?[^>]+(>|$)/g, "")
+    .replace(/&nbsp;/g, " ")
+    .replace(/&amp;/g, "&")
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+// ✅ Video URL kontrolcü (render ederken kullanmak için)
+function isVideoUrl(url: string) {
+  return /\.(mp4|webm|ogg|mov)(\?|$)/i.test(url);
+}
+
 export default function ProjeEklePage() {
   const [services, setServices] = useState<ServiceDoc[] | null>(null);
   const [servicesMap, setServicesMap] = useState<Record<string, ServiceDoc>>({});
@@ -92,13 +116,46 @@ export default function ProjeEklePage() {
     location: "",
     startDate: "",
     endDate: "",
-    images: [], // YENİ dosyalar
+    images: [], // YENİ dosyalar (görsel veya video)
   });
+
+  // ✅ Quill toolbar/modules
+  const quillModules = useMemo(
+    () => ({
+      toolbar: [
+        [{ header: [1, 2, 3, false] }],
+        ["bold", "italic", "underline", "strike"],
+        [{ list: "ordered" }, { list: "bullet" }],
+        [{ align: [] }],
+        ["blockquote", "code-block"],
+        ["link"],
+        ["clean"],
+      ],
+    }),
+    []
+  );
+
+  const quillFormats = useMemo(
+    () => [
+      "header",
+      "bold",
+      "italic",
+      "underline",
+      "strike",
+      "list",
+      "bullet",
+      "align",
+      "blockquote",
+      "code-block",
+      "link",
+    ],
+    []
+  );
 
   // Yeni dosya önizlemeleri
   const [newPreviews, setNewPreviews] = useState<string[]>([]);
 
-  // Düzenleme moduna özel: mevcut görsel URL’leri ve silinecekler
+  // Düzenleme moduna özel: mevcut medya URL’leri ve silinecekler
   const [editingId, setEditingId] = useState<string | null>(null);
   const [existingImageUrls, setExistingImageUrls] = useState<string[]>([]);
   const [removedExistingUrls, setRemovedExistingUrls] = useState<string[]>([]);
@@ -170,15 +227,17 @@ export default function ProjeEklePage() {
     return () => unsub();
   }, []);
 
-  // ——— DOSYA SEÇİMİ (YENİ) ———
+  // ——— DOSYA SEÇİMİ (YENİ) (Video Desteği Eklendi) ———
   const onFilesChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files ?? []);
-    const onlyImages = files.filter((f) => f.type.startsWith("image/"));
-    if (onlyImages.length !== files.length) {
-      setMessage({ type: "err", text: "Lütfen yalnızca görsel dosyaları seçin." });
+    // Sadece görsel veya video olanları al
+    const validFiles = files.filter((f) => f.type.startsWith("image/") || f.type.startsWith("video/"));
+
+    if (validFiles.length !== files.length) {
+      setMessage({ type: "err", text: "Lütfen yalnızca görsel veya video dosyaları seçin." });
     }
-    setForm((p) => ({ ...p, images: onlyImages }));
-    setNewPreviews(onlyImages.map((f) => URL.createObjectURL(f)));
+    setForm((p) => ({ ...p, images: validFiles }));
+    setNewPreviews(validFiles.map((f) => URL.createObjectURL(f)));
   };
 
   // Yeni seçilenlerden tek tek kaldır
@@ -195,7 +254,7 @@ export default function ProjeEklePage() {
     });
   };
 
-  // Mevcut (URL) görsellerden kaldır
+  // Mevcut (URL) medyadan kaldır
   const removeExistingAt = (idx: number) => {
     setExistingImageUrls((prev) => {
       const url = prev[idx];
@@ -211,20 +270,20 @@ export default function ProjeEklePage() {
   const validate = async () => {
     if (!form.title.trim()) return "Proje başlığı zorunludur.";
     if (form.title.trim().length < 3) return "Başlık en az 3 karakter olmalı.";
-    if (!form.description.trim()) return "Proje açıklaması zorunludur.";
+
+    const descText = stripHtml(form.description || "");
+    if (!descText) return "Proje açıklaması zorunludur.";
+
     if (!form.serviceId) return "Lütfen bir hizmet seçin.";
 
-    // Yeni proje eklerken en az bir görsel zorunluydu.
-    // Düzenlemede ya mevcut URL’lerden en az biri kalmalı ya da yeni dosya olmalı.
     if (!editingId) {
-      if (form.images.length === 0) return "En az bir görsel ekleyin.";
+      if (form.images.length === 0) return "En az bir medya (görsel/video) ekleyin.";
     } else {
       if (existingImageUrls.length === 0 && form.images.length === 0) {
-        return "En az bir görsel bırakın veya yeni görsel ekleyin.";
+        return "En az bir medya bırakın veya yeni medya ekleyin.";
       }
     }
 
-    // serviceId doğrula
     try {
       const sDoc = await getDoc(fsDoc(db, "services", form.serviceId));
       if (!sDoc.exists()) return "Seçilen hizmet bulunamadı.";
@@ -250,7 +309,6 @@ export default function ProjeEklePage() {
       const slugBase = slugify(form.title);
       const stamp = Date.now();
 
-      // Yeni dosyaları yükle
       const options = {
         maxSizeMB: 1.25,
         maxWidthOrHeight: 2000,
@@ -260,11 +318,19 @@ export default function ProjeEklePage() {
       const uploadedUrls: string[] = [];
       for (let i = 0; i < form.images.length; i++) {
         const file = form.images[i];
-        const compressed = await imageCompression(file, options);
-        const ext = (file.name.split(".").pop() || "jpg").toLowerCase();
+        const isVideo = file.type.startsWith("video/");
+
+        let fileToUpload: File | Blob = file;
+
+        // Sadece görselleri sıkıştır, videoları doğrudan yükle
+        if (!isVideo) {
+          fileToUpload = await imageCompression(file, options);
+        }
+
+        const ext = (file.name.split(".").pop() || (isVideo ? "mp4" : "jpg")).toLowerCase();
         const path = `projects/${slugBase}-${stamp}/${i + 1}.${ext}`;
         const sref = storageRef(storage, path);
-        await uploadBytes(sref, compressed);
+        await uploadBytes(sref, fileToUpload);
         const url = await getDownloadURL(sref);
         uploadedUrls.push(url);
       }
@@ -276,7 +342,7 @@ export default function ProjeEklePage() {
         await addDoc(collection(db, "projects"), {
           title: form.title.trim(),
           slug: slugBase,
-          description: form.description.trim(),
+          description: form.description,
           status: form.status,
           serviceId: form.serviceId,
           client: form.client?.trim() || null,
@@ -292,14 +358,14 @@ export default function ProjeEklePage() {
         setMessage({ type: "ok", text: "Proje başarıyla eklendi 🎉" });
         resetForm();
       } else {
-        // DÜZENLEME: final images = (kalan mevcut URL’ler) + (yeni yüklenenler)
+        // DÜZENLEME
         const finalImages = [...existingImageUrls, ...uploadedUrls];
         const coverImageUrl = finalImages[0] || "";
 
         await updateDoc(fsDoc(db, "projects", editingId), {
           title: form.title.trim(),
           slug: slugBase,
-          description: form.description.trim(),
+          description: form.description,
           status: form.status,
           serviceId: form.serviceId,
           client: form.client?.trim() || null,
@@ -311,13 +377,12 @@ export default function ProjeEklePage() {
           updatedAt: serverTimestamp(),
         });
 
-        // Storage’dan silinecek URL’leri temizle
         for (const url of removedExistingUrls) {
           try {
             const r = refFromURL(storage, url);
             await deleteObject(r);
           } catch (er) {
-            console.warn("Görsel silinemedi:", url, er);
+            console.warn("Medya silinemedi:", url, er);
           }
         }
 
@@ -357,7 +422,7 @@ export default function ProjeEklePage() {
     const passSearch =
       !key ||
       p.title.toLowerCase().includes(key) ||
-      (p.description ?? "").toLowerCase().includes(key) ||
+      stripHtml(p.description ?? "").toLowerCase().includes(key) ||
       (servicesMap[p.serviceId]?.name ?? "").toLowerCase().includes(key);
     return passStatus && passSearch;
   });
@@ -373,11 +438,11 @@ export default function ProjeEklePage() {
       location: p.location ?? "",
       startDate: p.startDate ?? "",
       endDate: p.endDate ?? "",
-      images: [], // düzenlemeye girerken yeni dosya yok
+      images: [],
     });
     setExistingImageUrls(p.images || []);
     setRemovedExistingUrls([]);
-    setNewPreviews([]); // yeni seçilecekler temiz
+    setNewPreviews([]);
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
@@ -386,23 +451,21 @@ export default function ProjeEklePage() {
   };
 
   const deleteProject = async (p: ProjectDoc) => {
-    const yes = confirm(`"${p.title}" projesini silmek istiyor musun? Bu işlem görselleri de kaldırır.`);
+    const yes = confirm(`"${p.title}" projesini silmek istiyor musun? Bu işlem medyaları da kaldırır.`);
     if (!yes) return;
 
     try {
-      // Storage: görselleri sil
       for (const url of p.images || []) {
         try {
           const r = refFromURL(storage, url);
           await deleteObject(r);
         } catch (e) {
-          console.warn("Görsel silinemedi:", url, e);
+          console.warn("Medya silinemedi:", url, e);
         }
       }
 
-      // Firestore: dokümanı sil
       await deleteDoc(fsDoc(db, "projects", p.id));
-      setMessage({ type: "ok", text: "Proje ve görselleri silindi." });
+      setMessage({ type: "ok", text: "Proje ve medyaları silindi." });
       if (editingId === p.id) resetForm();
     } catch (e) {
       console.error(e);
@@ -551,36 +614,41 @@ export default function ProjeEklePage() {
             </div>
           </div>
 
-          {/* Açıklama */}
+          {/* ✅ Açıklama (ReactQuill) */}
           <div>
             <label htmlFor="desc" className="block text-sm font-medium text-gray-700">
               Proje Açıklaması <span className="text-red-500">*</span>
             </label>
-            <textarea
-              id="desc"
-              rows={6}
-              value={form.description}
-              onChange={(e) => setForm((p) => ({ ...p, description: e.target.value }))}
-              placeholder="Projenin kapsamı, yapılan işler, kullanılan malzemeler vb..."
-              className="mt-2 w-full rounded-lg border border-gray-300 px-4 py-2.5 text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-            />
+
+            <div className="mt-2 rounded-lg border border-gray-300 overflow-hidden text-black">
+              <ReactQuill
+                theme="snow"
+                value={form.description}
+                onChange={(val: string) => setForm((p) => ({ ...p, description: val }))}
+                modules={quillModules}
+                formats={quillFormats}
+                placeholder="Projenin kapsamı, yapılan işler, kullanılan malzemeler vb..."
+              />
+            </div>
           </div>
 
-          {/* Görseller */}
+          {/* Medya */}
           <div className="space-y-3">
-            {/* Mevcut görseller (sadece düzenleme modunda) */}
+            {/* Mevcut görseller/videolar (sadece düzenleme modunda) */}
             {editingId && (
               <div>
-                <label className="block text-sm font-medium text-gray-700">
-                  Mevcut Görseller
-                </label>
+                <label className="block text-sm font-medium text-gray-700">Mevcut Medyalar</label>
                 {existingImageUrls.length === 0 ? (
-                  <p className="mt-1 text-xs text-gray-500">Bu projede kayıtlı görsel kalmadı.</p>
+                  <p className="mt-1 text-xs text-gray-500">Bu projede kayıtlı görsel/video kalmadı.</p>
                 ) : (
                   <div className="mt-2 grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-3">
                     {existingImageUrls.map((src, idx) => (
                       <div key={src + idx} className="relative h-24 w-full overflow-hidden rounded-md ring-1 ring-gray-200">
-                        <Image src={src} alt={`Mevcut ${idx + 1}`} fill className="object-cover" />
+                        {isVideoUrl(src) ? (
+                          <video src={src} className="object-cover w-full h-full" muted playsInline />
+                        ) : (
+                          <Image src={src} alt={`Mevcut ${idx + 1}`} fill className="object-cover" />
+                        )}
                         <button
                           type="button"
                           onClick={() => removeExistingAt(idx)}
@@ -596,38 +664,40 @@ export default function ProjeEklePage() {
               </div>
             )}
 
-            {/* Yeni görseller */}
+            {/* Yeni görseller/videolar */}
             <div>
               <label className="block text-sm font-medium text-gray-700">
-                {editingId ? "Yeni Görsel Ekle (opsiyonel)" : "Proje Görselleri (birden fazla) *"}
+                {editingId ? "Yeni Görsel/Video Ekle (opsiyonel)" : "Proje Medyası (Görsel veya Video) *"}
               </label>
               <div className="mt-2 flex flex-wrap items-center gap-4">
                 <label className="cursor-pointer inline-flex items-center justify-center rounded-lg border border-dashed border-gray-300 px-4 py-2.5 text-gray-700 hover:bg-gray-50">
-                  <input
-                    type="file"
-                    accept="image/*"
-                    multiple
-                    onChange={onFilesChange}
-                    className="hidden"
-                  />
-                  Görsel Seç
+                  {/* Hem resim hem video seçilebilsin diye accept güncellendi */}
+                  <input type="file" accept="image/*,video/*" multiple onChange={onFilesChange} className="hidden" />
+                  Dosya Seç
                 </label>
 
                 {newPreviews.length > 0 && (
                   <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-3 w-full">
-                    {newPreviews.map((src, idx) => (
-                      <div key={src + idx} className="relative h-24 w-full overflow-hidden rounded-md ring-1 ring-gray-200">
-                        <Image src={src} alt={`Yeni ${idx + 1}`} fill className="object-cover" />
-                        <button
-                          type="button"
-                          onClick={() => removeNewImageAt(idx)}
-                          className="absolute top-1 right-1 rounded bg-black/60 text-white text-xs px-2 py-0.5"
-                          title="Kaldır"
-                        >
-                          Kaldır
-                        </button>
-                      </div>
-                    ))}
+                    {newPreviews.map((src, idx) => {
+                      const isVideo = form.images[idx]?.type.startsWith("video/");
+                      return (
+                        <div key={src + idx} className="relative h-24 w-full overflow-hidden rounded-md ring-1 ring-gray-200">
+                          {isVideo ? (
+                            <video src={src} className="object-cover w-full h-full" muted playsInline />
+                          ) : (
+                            <Image src={src} alt={`Yeni ${idx + 1}`} fill className="object-cover" />
+                          )}
+                          <button
+                            type="button"
+                            onClick={() => removeNewImageAt(idx)}
+                            className="absolute top-1 right-1 rounded bg-black/60 text-white text-xs px-2 py-0.5"
+                            title="Kaldır"
+                          >
+                            Kaldır
+                          </button>
+                        </div>
+                      );
+                    })}
                   </div>
                 )}
               </div>
@@ -637,11 +707,10 @@ export default function ProjeEklePage() {
           {/* Mesaj */}
           {message && (
             <div
-              className={`rounded-lg px-4 py-3 text-sm ${
-                message.type === "ok"
+              className={`rounded-lg px-4 py-3 text-sm ${message.type === "ok"
                   ? "bg-green-50 text-green-700 border border-green-200"
                   : "bg-red-50 text-red-700 border border-red-200"
-              }`}
+                }`}
             >
               {message.text}
             </div>
@@ -654,7 +723,7 @@ export default function ProjeEklePage() {
               disabled={submitting}
               className="inline-flex items-center justify-center rounded-lg bg-blue-600 px-5 py-2.5 font-semibold text-white hover:bg-blue-700 disabled:opacity-60"
             >
-              {submitting ? (editingId ? "Güncelleniyor..." : "Kaydediliyor...") : (editingId ? "Projeyi Güncelle" : "Projeyi Kaydet")}
+              {submitting ? (editingId ? "Güncelleniyor..." : "Kaydediliyor...") : editingId ? "Projeyi Güncelle" : "Projeyi Kaydet"}
             </button>
 
             {editingId && (
@@ -672,9 +741,7 @@ export default function ProjeEklePage() {
         {/* ——— LİSTE ——— */}
         <section className="mt-10">
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 mb-4">
-            <h2 className="text-xl font-semibold text-gray-900">
-              Eklenmiş Projeler
-            </h2>
+            <h2 className="text-xl font-semibold text-gray-900">Eklenmiş Projeler</h2>
             <div className="flex items-center gap-2">
               <select
                 value={filterStatus}
@@ -712,31 +779,39 @@ export default function ProjeEklePage() {
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
               {filteredProjects.map((p) => {
                 const cover = p.coverImageUrl || p.images?.[0] || "/placeholder.jpg";
+                const isCoverVideo = isVideoUrl(cover);
                 const serviceName = servicesMap[p.serviceId]?.name || "—";
                 const isEditingCard = editingId === p.id;
 
                 return (
                   <div
                     key={p.id}
-                    className={`rounded-2xl border bg-white overflow-hidden shadow-sm ${
-                      isEditingCard ? "border-blue-300 ring-1 ring-blue-100" : "border-gray-200"
-                    }`}
+                    className={`rounded-2xl border bg-white overflow-hidden shadow-sm ${isEditingCard ? "border-blue-300 ring-1 ring-blue-100" : "border-gray-200"
+                      }`}
                   >
                     <div className="relative h-40 w-full">
-                      <Image
-                        src={cover}
-                        alt={p.title}
-                        fill
-                        className="object-cover"
-                        sizes="(max-width: 1024px) 100vw, 33vw"
-                      />
+                      {isCoverVideo ? (
+                        <video
+                          src={cover}
+                          className="object-cover w-full h-full"
+                          muted
+                          playsInline
+                        />
+                      ) : (
+                        <Image
+                          src={cover}
+                          alt={p.title}
+                          fill
+                          className="object-cover"
+                          sizes="(max-width: 1024px) 100vw, 33vw"
+                        />
+                      )}
                       {p.status && (
                         <span
-                          className={`absolute top-2 left-2 text-xs px-2 py-1 rounded-full border ${
-                            p.status === "ongoing"
+                          className={`absolute top-2 left-2 text-xs px-2 py-1 rounded-full border ${p.status === "ongoing"
                               ? "bg-amber-50 text-amber-700 border-amber-200"
                               : "bg-emerald-50 text-emerald-700 border-emerald-200"
-                          }`}
+                            }`}
                         >
                           {p.status === "ongoing" ? "Devam Eden" : "Bitmiş"}
                         </span>
@@ -746,22 +821,15 @@ export default function ProjeEklePage() {
                     <div className="p-4">
                       <h3 className="font-semibold text-gray-900">{p.title}</h3>
                       <p className="mt-0.5 text-xs text-gray-500">Hizmet: {serviceName}</p>
-                      {p.location && (
-                        <p className="mt-0.5 text-xs text-gray-500">Konum: {p.location}</p>
-                      )}
-                      <p className="mt-2 text-sm text-gray-600 line-clamp-3">{p.description}</p>
+                      {p.location && <p className="mt-0.5 text-xs text-gray-500">Konum: {p.location}</p>}
+
+                      <p className="mt-2 text-sm text-gray-600 line-clamp-3">{stripHtml(p.description)}</p>
 
                       <div className="mt-4 flex items-center justify-between">
-                        <button
-                          onClick={() => startEdit(p)}
-                          className="text-blue-600 hover:text-blue-700 text-sm font-medium"
-                        >
+                        <button onClick={() => startEdit(p)} className="text-blue-600 hover:text-blue-700 text-sm font-medium">
                           Düzenle
                         </button>
-                        <button
-                          onClick={() => deleteProject(p)}
-                          className="text-red-600 hover:text-red-700 text-sm font-medium"
-                        >
+                        <button onClick={() => deleteProject(p)} className="text-red-600 hover:text-red-700 text-sm font-medium">
                           Sil
                         </button>
                       </div>

@@ -120,7 +120,7 @@ export default function HaberlerBlogPage() {
                 <span className="text-slate-400 font-bold uppercase tracking-[0.4em] text-xs">
                   {featuredPost.category} — {featuredPost.createdAt?.toDate().toLocaleDateString('tr-TR')}
                 </span>
-                <h2 className="text-5xl md:text-8xl font-black uppercase italic tracking-tighter leading-[0.9] text-slate-900 group-hover:text-orange-500 transition-colors">
+                <h2 className="text-3xl md:text-6xl font-black uppercase italic tracking-tighter leading-[0.9] text-slate-900 group-hover:text-orange-500 transition-colors">
                   {featuredPost.title}
                 </h2>
                 <p className="text-slate-500 text-xl font-medium leading-relaxed max-w-xl">

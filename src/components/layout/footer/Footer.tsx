@@ -115,7 +115,7 @@ export default function Footer() {
             <div>
               <h4 className="text-orange-500 font-bold uppercase tracking-[0.2em] text-xs mb-8">Bize Ulaşın</h4>
               <p className="text-slate-300 text-sm leading-loose">
-                19 MAYIS MAH. TOYGAR SK. 54 NOLU B.B. <br /> NO: 36G KAPAKLI / TEKİRDAĞ
+                Kızılay Mah. İzmir 2 Cad. Oya Apt. No: 45 İç Kapı No: 12 <br></br>Çankaya / Ankara
               </p>
               <div className="mt-6">
                 <a href="tel:05111111111" className="block text-xl font-bold hover:text-orange-500 transition-colors">

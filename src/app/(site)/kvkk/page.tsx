@@ -6,7 +6,7 @@ import { Shield, Globe, Lock, Send, ChevronRight } from "lucide-react";
 
 const ORG = {
   name: "CBO İnşaat",
-  address: "19 Mayıs Mah. Toygar Sk. No: 36G, Kapaklı / Tekirdağ",
+  address: "Kızılay Mah. İzmir 2 Cad. Oya Apt. No: 45 İç Kapı No: 12 Çankaya / Ankara",
   email: "info@cboyapi.com",
   updatedAt: "05.11.2025",
 };

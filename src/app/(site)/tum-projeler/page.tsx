@@ -112,7 +112,7 @@ function ProjectCard({ project, index, isWide }: { project: Project; index: numb
       className={`${isWide ? "md:col-span-8" : "md:col-span-4"} group relative`}
     >
       <Link href={{ pathname: "/proje-detay", query: { id: project.id } }}>
-        <div className="relative h-[400px] md:h-[550px] w-full overflow-hidden rounded-[2.5rem] bg-slate-100">
+        <div className="relative w-full h-[400px] md:h-[550px] overflow-hidden  bg-slate-100">
           
           {/* Status Badge */}
           <div className="absolute top-6 left-6 z-20">
